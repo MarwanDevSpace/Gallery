@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>مكتبة عبد الجبار | واجهات وتصاميم فنية</title>
+    <meta name="description" content="البورتفوليو الاحترافي للمصمم عبد الجبار — تصاميم بصرية محمية بتقنية img2Preview.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;600;700;800;900&family=Cairo:wght@300;400;600;700&family=Lalezar&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="unselectable">
+
+    <div id="toast" class="toast-notification"></div>
+    <div class="grid-pattern-bg"></div>
+    <div class="blob-bg">
+        <div class="blob blob-primary"></div>
+        <div class="blob blob-secondary"></div>
+        <div class="blob blob-accent"></div>
+    </div>
+
+    <!-- ══ NAVBAR ══ -->
+    <nav class="navbar">
+        <div class="nav-progress-bar" id="nav-progress"></div>
+        <div class="nav-container">
+            <a class="brand" href="#" draggable="false">
+                <img src="header.png" alt="Abdul Jabbar Gallery" class="brand-logo">
+            </a>
+            <div class="nav-center">
+                <span class="nav-tagline">Portfolio · Visual Design · 2026</span>
+            </div>
+            <div class="nav-controls">
+                <div class="live-dot" title="متاح للعمل"></div>
+                <button id="theme-toggle" class="control-btn hover-pop" aria-label="تبديل الثيم">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ HERO ══ -->
+    <header class="hero-section">
+        <div class="container">
+            <div class="hero-unified-box">
+
+                <!-- Text -->
+                <article class="hero-text">
+                    <div class="hero-eyebrow">
+                        <span class="eyebrow-dot"></span>
+                        Graphic Designer · Creative Studio
+                    </div>
+                    <h1 class="hero-title anim-up">معرض <span class="text-gradient">أعمالي</span></h1>
+                    <p class="hero-desc anim-up delay-1">
+                        معرضي الخاص للـ <span dir="ltr">Graphic Design</span> لعرض التصاميم والأعمال الصورية الخاصة. كل قطعة تحكي قصة بصرية فريدة.
+                    </p>
+
+                    <div class="tools-row anim-up delay-2">
+                        <span class="tools-label">الأدوات المستخدمة</span>
+                        <div class="tools-badges">
+                            <span class="badge-tool">
+                                <svg class="tool-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#7D2AE8"/><circle cx="12" cy="12" r="5.5" fill="#fff"/><path d="M12 7.5c-2.5 0-4.5 2-4.5 4.5s2 4.5 4.5 4.5 4.5-2 4.5-4.5-2-4.5-4.5-4.5zm0 7c-1.4 0-2.5-1.1-2.5-2.5s1.1-2.5 2.5-2.5 2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z" fill="#7D2AE8"/></svg>
+                                Canva
+                            </span>
+                            <span class="badge-tool">
+                                <svg class="tool-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF6CB5"/><stop offset="100%" stop-color="#FF3CAC"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5" fill="url(#hg)"/><path d="M8 16V8h2l2 4 2-4h2v8h-2v-5l-2 3.5-2-3.5V16H8z" fill="#fff"/></svg>
+                                Hypic
+                            </span>
+                            <span class="badge-tool">
+                                <svg class="tool-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M2 12.13C2 8.59 2 6.81 2.69 5.46A6.9 6.9 0 015.46 2.69C6.81 2 8.59 2 12.13 2h7.74c3.55 0 5.32 0 6.67.69a6.9 6.9 0 012.77 2.77C30 6.81 30 8.59 30 12.13v7.74c0 3.55 0 5.32-.69 6.67a6.9 6.9 0 01-2.77 2.77c-1.35.69-3.13.69-6.67.69h-7.74c-3.55 0-5.32 0-6.67-.69a6.9 6.9 0 01-2.77-2.77C2 25.19 2 23.41 2 19.87V12.13z" fill="#001E36"/><path d="M16.7 22.62H9.3c-.12 0-.19-.07-.19-.21V10.17c-.01-.1.08-.19.17-.17h2.29c.08-.01.14.06.13.14v10.06h5.39c.11 0 .16.06.13.17l-.34 2.08c0 .1-.09.17-.19.17z" fill="#31A8FF"/><path d="M18.59 13.03h2.05c.11 0 .21.08.24.19.15.34.17.76.17 1.12.35-.42.77-.77 1.25-1.03a3.1 3.1 0 011.67-.43c.1-.01.18.09.17.17v2.33c0 .09-.06.13-.19.13-.87-.06-2.22.15-2.85.85v6.06c0 .12-.05.17-.15.17h-2.2c-.11.02-.2-.08-.19-.19v-6.58c0-.88.02-1.79-.11-2.66-.02-.08.05-.16.13-.13z" fill="#31A8FF"/></svg>
+                                Lightroom
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="hero-sep anim-up delay-3"><span>تواصل معي</span></div>
+
+                    <div class="hero-actions anim-up delay-3">
+                        <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" draggable="false" class="btn btn-instagram hover-pop">
+                            <i class="fa-brands fa-instagram"></i> زيارة انستقرام
+                        </a>
+                        <a href="https://t.me/abdul_7jabbar" target="_blank" draggable="false" class="btn btn-telegram hover-pop">
+                            <i class="fa-brands fa-telegram"></i> رسالة تليجرام
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Visual -->
+                <aside class="hero-visual">
+                    <div class="orbit-ring"></div>
+                    <div class="orbit-ring-2"></div>
+                    <div class="cards-stack" id="hero-carousel">
+                        <div class="stack-card pos-1" data-hero-idx="1"><canvas class="hero-canvas"></canvas></div>
+                        <div class="stack-card pos-2" data-hero-idx="7"><canvas class="hero-canvas"></canvas></div>
+                        <div class="stack-card pos-3" data-hero-idx="0"><canvas class="hero-canvas"></canvas></div>
+                    </div>
+                    <div class="carousel-badge">
+                        <i class="fa-solid fa-images"></i>
+                        <span>أعمالي الأخيرة — <strong>8</strong> تصميم</span>
+                    </div>
+                </aside>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- ══ MARQUEE STRIP ══ -->
+    <div class="marquee-section">
+        <div class="marquee-track">
+            <!-- Set 1 -->
+            <span class="marquee-item"><span class="marquee-dot"></span>UI Design</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>هوية بصرية</span>
+            <span class="marquee-item ac"><span class="marquee-dot"></span>Branding</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Graphic Design</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>تصميم إبداعي</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Motion Graphics</span>
+            <span class="marquee-item ac"><span class="marquee-dot"></span>Visual Art</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Social Media</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>Poster Design</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Color Theory</span>
+            <span class="marquee-item ac"><span class="marquee-dot"></span>Typography</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>أعمال فنية</span>
+            <!-- Set 2 (duplicate for seamless loop) -->
+            <span class="marquee-item"><span class="marquee-dot"></span>UI Design</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>هوية بصرية</span>
+            <span class="marquee-item ac"><span class="marquee-dot"></span>Branding</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Graphic Design</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>تصميم إبداعي</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Motion Graphics</span>
+            <span class="marquee-item ac"><span class="marquee-dot"></span>Visual Art</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Social Media</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>Poster Design</span>
+            <span class="marquee-item"><span class="marquee-dot"></span>Color Theory</span>
+            <span class="marquee-item ac"><span class="marquee-dot"></span>Typography</span>
+            <span class="marquee-item hi"><span class="marquee-dot"></span>أعمال فنية</span>
+        </div>
+    </div>
+
+    <!-- ══ GALLERY & FOOTER WRAPPER ══ -->
+    <div class="gallery-wrapper">
+        <main class="gallery-section container">
+
+            <div class="section-header">
+                <div class="section-header-left">
+                    <span class="section-label">
+                        <span class="section-label-line"></span>
+                        Selected Works
+                    </span>
+                    <h2 class="section-title">
+                        المعرض
+                        <span class="section-count">08</span>
+                        <i class="fa-solid fa-images" style="color:var(--primary);font-size:.55em;vertical-align:middle;margin-right:.2em"></i>
+                    </h2>
+                </div>
+                <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="view-all-btn">
+                    عرض الكل <i class="fa-solid fa-arrow-left" style="font-size:.8em"></i>
+                </a>
+            </div>
+
+            <div class="masonry-layout" id="gallery-grid">
+                <figure class="gallery-item" data-idx="0">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>تصميم واجهة متطورة</h4>
+                        <span>واجهة مستخدم (UI)</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="1">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>تطبيق محمول</h4>
+                        <span>هوية رقمية</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="2">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>نماذج فنية</h4>
+                        <span>إيحاء هندسي</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="3">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>علامة تجارية</h4>
+                        <span>تطوير العلامة</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="4">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>بوستر إبداعي</h4>
+                        <span>فن تجريدي</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="5">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>تحليل وواجهات</h4>
+                        <span>تجربة متكاملة (UX)</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="6">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>تناسق لوني</h4>
+                        <span>دراسات بصرية</span>
+                    </figcaption>
+                </figure>
+                <figure class="gallery-item" data-idx="7">
+                    <canvas class="pixel-canvas"></canvas>
+                    <figcaption class="item-overlay">
+                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
+                        <h4>عناصر غرافيكية</h4>
+                        <span>مكونات تصميم</span>
+                    </figcaption>
+                </figure>
+            </div>
+
+        </main>
+
+        <!-- ══ FOOTER ══ -->
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer-inner">
+                    <div class="footer-brand">
+                        <img src="header.png" alt="AJ Logo" class="footer-logo">
+                    </div>
+                    <p class="footer-copy">
+                        &copy; 2026 جميع الحقوق محفوظة لمعرض عبد الجبار — المحتوى محمي بحقوق الملكية الفكرية
+                    </p>
+                    <div class="footer-socials">
+                        <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="social-icon ig" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="https://t.me/abdul_7jabbar" target="_blank" class="social-icon tg" aria-label="Telegram">
+                            <i class="fa-brands fa-telegram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══ MODAL ══ -->
+    <div id="ig-modal" class="modal-backdrop">
+        <div class="ig-modal-container">
+            <button class="modal-close" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+            <div class="ig-modal-image-col" id="modal-image-col">
+                <canvas id="modal-canvas" class="modal-pixel-canvas"></canvas>
+            </div>
+            <div class="ig-sidebar">
+                <header class="ig-sidebar-header">
+                    <div class="ig-avatar">AJ</div>
+                    <div class="ig-user-info">
+                        <strong>عبد الجبار <i class="fa-solid fa-circle-check verify"></i></strong>
+                        <span dir="ltr">@abdul_7jabbar</span>
+                    </div>
+                </header>
+                <div class="ig-sidebar-details">
+                    <h3 id="modal-title" class="ig-title">عنوان الصورة</h3>
+                    <p class="ig-subtitle">تم إخراج هذا العمل بدقة عالية عبر تقنية img2Preview — لا توجد صورة قابلة للتنزيل.</p>
+                    <div class="ig-metadata">
+                        <span class="meta-item"><i class="fa-solid fa-expand" style="color:var(--primary)"></i> الدقة الأصلية: <span id="modal-resolution" dir="ltr">--</span></span>
+                        <span class="meta-item secure"><i class="fa-solid fa-shield-halved"></i> محمية بتقنية img2Preview</span>
+                    </div>
+                </div>
+                <footer class="ig-sidebar-action-area">
+                    <div class="coffee-action-row">
+                        <button class="action-btn coffee-btn hover-pop" title="أرسل قهوة للمصمم" aria-label="إرسال قهوة">
+                            <i class="fa-solid fa-mug-hot"></i>
+                        </button>
+                        <div class="coffee-text-desc">
+                            <span class="coffee-count">تفاعل كدعم وقدم قهوة!</span>
+                            <span class="coffee-hint">تم إرسال <strong id="modal-likes-count">85</strong> فنجان ☕</span>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="img2preview.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        // ── Scroll progress bar ──
+        window.addEventListener('scroll', () => {
+            const el = document.getElementById('nav-progress');
+            if (!el) return;
+            const doc = document.documentElement;
+            const pct = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
+            el.style.width = Math.min(pct, 100) + '%';
+        }, { passive: true });
+
+        // ── Theme ──
+        const themeBtn = document.getElementById('theme-toggle');
+        let isLight = localStorage.getItem('theme') === 'light';
+        if (isLight) document.documentElement.setAttribute('data-theme', 'light');
+        let dark = !isLight;
+        themeBtn.innerHTML = dark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+
+        themeBtn.addEventListener('click', () => {
+            dark = !dark;
+            if (!dark) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'dark');
+            }
+            themeBtn.innerHTML = dark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        });
+
+        // ── Security ──
+        const showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerHTML = `<i class="fa-solid fa-lock" style="color:#e11d48"></i> ${msg}`;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        };
+        document.addEventListener('contextmenu', e => { e.preventDefault(); showToast('المحتوى محمي لأغراض حقوق النشر Copyright©'); });
+        document.addEventListener('dragstart', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && ['s','p','c','u'].includes(e.key.toLowerCase())) {
+                e.preventDefault(); showToast('المحتوى محمي لأغراض حقوق النشر Copyright©');
+            }
+        });
+
+        // ── Carousel ──
+        const heroCards = Array.from(document.querySelectorAll('.stack-card'));
+        const numGalleryItems = 8;
+        const POSITIONS = ['pos-1','pos-2','pos-3'];
+        let classPositions = [...POSITIONS];
+        let currentCenterImgIdx = 0;
+        let isAnimating = false;
+
+        function paintCard(card, idx) {
+            const canvas = card.querySelector('canvas');
+            const w = card.offsetWidth || 260;
+            const h = card.offsetHeight || 380;
+            return Img2Preview.paint(canvas, idx, { w, h }).catch(() => {});
+        }
+        heroCards.forEach(card => { const idx = parseInt(card.dataset.heroIdx); paintCard(card, idx); });
+
+        function rotateCarousel(dir) {
+            if (isAnimating) return;
+            isAnimating = true;
+            setTimeout(() => { isAnimating = false; }, 750);
+            if (dir === 'next') {
+                classPositions.unshift(classPositions.pop());
+                currentCenterImgIdx = (currentCenterImgIdx + 1) % numGalleryItems;
+            } else {
+                classPositions.push(classPositions.shift());
+                currentCenterImgIdx = (currentCenterImgIdx - 1 + numGalleryItems) % numGalleryItems;
+            }
+            heroCards.forEach((card, i) => {
+                POSITIONS.forEach(p => card.classList.remove(p));
+                card.classList.add(classPositions[i]);
+                const isGoingToBack = (dir === 'next' && classPositions[i] === 'pos-1') ||
+                                      (dir === 'prev' && classPositions[i] === 'pos-2');
+                if (isGoingToBack) {
+                    const nextImg = dir === 'next'
+                        ? (currentCenterImgIdx + 1) % numGalleryItems
+                        : (currentCenterImgIdx - 1 + numGalleryItems) % numGalleryItems;
+                    setTimeout(() => { card.dataset.heroIdx = nextImg; paintCard(card, nextImg); }, 350);
+                }
+            });
+        }
+
+        let heroAuto = setInterval(() => { if (!document.hidden) rotateCarousel('next'); }, 4000);
+
+        const heroStack = document.getElementById('hero-carousel');
+        let startX = 0, isDragging = false;
+        heroStack.addEventListener('pointerdown', e => { isDragging = true; startX = e.clientX; heroStack.style.cursor = 'grabbing'; });
+        const handleDragEnd = e => {
+            if (!isDragging) return;
+            isDragging = false; heroStack.style.cursor = 'grab';
+            let diffX = e.clientX - startX;
+            if (Math.abs(diffX) > 40) {
+                clearInterval(heroAuto);
+                diffX > 0 ? rotateCarousel('prev') : rotateCarousel('next');
+                heroAuto = setInterval(() => { if (!document.hidden) rotateCarousel('next'); }, 4000);
+            }
+        };
+        window.addEventListener('pointerup', handleDragEnd);
+        window.addEventListener('pointercancel', () => { isDragging = false; heroStack.style.cursor = 'grab'; });
+
+        // ── Gallery render ──
+        const items = document.querySelectorAll('.gallery-item');
+        items.forEach((item, i) => {
+            setTimeout(() => {
+                const idx = parseInt(item.dataset.idx);
+                const cv = item.querySelector('.pixel-canvas');
+                Img2Preview.paint(cv, idx).catch(() => {});
+            }, i * 100);
+        });
+
+        // ── Modal ──
+        const modal = document.getElementById('ig-modal');
+        const modalCanvas = document.getElementById('modal-canvas');
+        const modalImageCol = document.getElementById('modal-image-col');
+        const modalTitle = document.getElementById('modal-title');
+        const modalRes = document.getElementById('modal-resolution');
+        const coffeeBtn = document.querySelector('.coffee-btn');
+        const likesEl = document.getElementById('modal-likes-count');
+        let likes = 0, liked = false;
+
+        document.getElementById('gallery-grid').addEventListener('click', e => {
+            const item = e.target.closest('.gallery-item');
+            if (!item) return;
+            const idx = parseInt(item.dataset.idx);
+            const title = item.querySelector('h4').innerText;
+            coffeeBtn.classList.remove('liked');
+            liked = false;
+            likes = Math.floor(Math.random() * 90) + 10;
+            likesEl.innerText = likes;
+            modalTitle.innerText = title;
+            modalRes.innerText = 'جاري التحميل...';
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            requestAnimationFrame(() => {
+                const cw = modalImageCol.clientWidth;
+                const ch = modalImageCol.clientHeight;
+                Img2Preview.paint(modalCanvas, idx, { hd: true, contain: true, w: cw, h: ch, watermark: true })
+                    .then(r => { modalRes.innerText = `${r.nw} x ${r.nh} Px`; })
+                    .catch(() => {});
+            });
+        });
+
+        coffeeBtn.addEventListener('click', function () {
+            if (!liked) {
+                this.classList.add('liked'); liked = true; likes++;
+                const f = document.createElement('span');
+                f.innerText = '☕'; f.className = 'floating-coffee';
+                this.appendChild(f);
+                setTimeout(() => f.remove(), 1000);
+            } else {
+                this.classList.remove('liked'); liked = false; likes--;
+            }
+            likesEl.innerText = likes;
+        });
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                const ctx = modalCanvas.getContext('2d');
+                ctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+            }, 350);
+        }
+        document.querySelector('.modal-close').addEventListener('click', closeModal);
+        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+
+        // ── Resize ──
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                items.forEach(item => {
+                    const idx = parseInt(item.dataset.idx);
+                    const cv = item.querySelector('.pixel-canvas');
+                    Img2Preview.paint(cv, idx).catch(() => {});
+                });
+                document.querySelectorAll('.hero-canvas').forEach(c => {
+                    const idx = parseInt(c.dataset.heroIdx);
+                    Img2Preview.paint(c, idx, { w: c.clientWidth, h: c.clientHeight }).catch(() => {});
+                });
+            }, 400);
+        });
+
+    })();
+    </script>
+</body>
+</html>
