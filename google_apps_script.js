@@ -2,18 +2,23 @@
  * Google Apps Script (GAS) Web App for Direct Image Uploads to Google Drive Folder
  * Target Folder: Gallery_Images (ID: 1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm)
  * 
- * ══ 4 Simple Steps to Deploy (takes 30 seconds): ══
- * 1. Open https://script.google.com and click "New project".
- * 2. Delete anything in Code.gs, paste this entire file, and click Save (disk icon).
- * 3. Click "Deploy" (top right) > "New deployment" > click the gear icon and choose "Web app".
- *    - Description: AJ Gallery Drive Bridge
- *    - Execute as: "Me" (your Google account)
- *    - Who has access: "Anyone"
- * 4. Click "Deploy", authorize permissions when prompted, and copy the Web App URL (starts with https://script.google.com/macros/s/.../exec).
- * 5. Paste the URL into the "ربط Google Drive" dialog in your AJ Gallery admin panel.
+ * ══ خطوة تفعيل صلاحيات DriveApp المهمة جداً: ══
+ * 1. في المحرر بالأعلى اختر الدالة authorize واضغط على زر "تشغيل" (Run ▶).
+ * 2. ستظهر نافذة "يلزم الحصول على إذن" (Authorization Required) -> اضغط "مراجعة الأذونات" (Review permissions).
+ * 3. اختر حسابك -> اضغط "إعدادات متقدمة" (Advanced) -> اضغط "الانتقال إلى ... (غير آمن)" -> اضغط "سماح" (Allow).
+ * 4. اضغط زر "نشر" (Deploy) > "إدارة عمليات النشر" (Manage deployments) > اضغط القلم ✏️ > اختر "إصدار جديد" (New version) واضغط Deploy!
  */
 
 const FOLDER_ID = '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm';
+
+/**
+ * دالة لتفعيل ومراجعة صلاحيات Google Drive في محرر Apps Script
+ * اضغط "تشغيل" (Run) لهذه الدالة للموافقة على الصلاحيات
+ */
+function authorize() {
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  Logger.log('تم تفعيل وتأكيد الصلاحيات بنجاح لمجلد: ' + folder.getName());
+}
 
 function doPost(e) {
   try {
