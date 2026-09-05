@@ -25,7 +25,9 @@
         currentImageUrl: null,
         currentDimensions: null,
         isProcessingImage: false,
-        driveScriptUrl: 'https://script.google.com/macros/s/AKfycbx51dtS3L6nrcMwMo4gyovM-eWjL-tmCUHt5G-6_7ERcSN8DGFCOiE8eFh1ToZDfPVwfw/exec'
+        gdriveToken: sessionStorage.getItem('aj_gdrive_token') || localStorage.getItem('aj_gdrive_token') || null,
+        gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '199047107207-dlqa691pej8o13vequ9irc694vla1slm.apps.googleusercontent.com',
+        gisTokenClient: null
     };
 
     // Check existing session
@@ -44,80 +46,80 @@
         setTimeout(() => t.classList.remove('show'), 3800);
     }
 
-    // ── Google Apps Script Bridge Configuration & State Sync ──
-    async function loadDriveScriptUrl() {
-        try {
-            const res = await fetch(`${FIREBASE_RTDB_BASE}/DriveScriptUrl.json`);
-            if (res.ok) {
-                const val = await res.json();
-                if (val && typeof val === 'string' && val.trim().startsWith('http')) {
-                    AdminState.driveScriptUrl = val.trim();
-                    updateDriveStatusBadge(true);
-                    return val.trim();
-                }
-            }
-        } catch (_) {}
-        AdminState.driveScriptUrl = null;
-        updateDriveStatusBadge(false);
-        return null;
+    // ── Google Drive API v3 Configuration & Authorization (Smart System modeled after Aqeeda) ──
+    function getGoogleDriveToken() {
+        return AdminState.gdriveToken;
+    }
+
+    function setGoogleDriveToken(token, persist = true) {
+        const clean = String(token || '').trim();
+        if (!clean) {
+            AdminState.gdriveToken = null;
+            sessionStorage.removeItem('aj_gdrive_token');
+            localStorage.removeItem('aj_gdrive_token');
+            updateDriveStatusBadge(false);
+            return;
+        }
+        AdminState.gdriveToken = clean;
+        sessionStorage.setItem('aj_gdrive_token', clean);
+        if (persist) {
+            localStorage.setItem('aj_gdrive_token', clean);
+        }
+        updateDriveStatusBadge(true);
     }
 
     function updateDriveStatusBadge(isConnected) {
         const badge = document.getElementById('gdrive-status-badge');
         if (!badge) return;
-        if (isConnected) {
+        const connected = isConnected !== undefined ? isConnected : Boolean(AdminState.gdriveToken);
+        if (connected) {
             badge.style.color = '#10b981';
             badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
             badge.innerHTML = `<i class="fa-brands fa-google-drive" style="color:#10b981"></i> Drive متصل`;
-            badge.title = 'Google Drive متصل بنجاح بالمجلد Gallery_Images (انقر للتعديل)';
+            badge.title = 'Google Drive متصل ومفوض بنجاح بالمجلد Gallery_Images (API v3)';
         } else {
             badge.style.color = '#f59e0b';
             badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
             badge.innerHTML = `<i class="fa-brands fa-google-drive"></i> ربط Google Drive`;
-            badge.title = 'انقر لربط وتفعيل الرفع التلقائي إلى مجلد Google Drive';
+            badge.title = 'انقر لربط وتفويض Google Drive للرفع والحذف التلقائي بالمجلد';
         }
     }
 
-    const GAS_CODE_SNIPPET = `const FOLDER_ID = '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm';
+    function initGisTokenClient() {
+        if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+            return null;
+        }
+        if (AdminState.gisTokenClient) return AdminState.gisTokenClient;
 
-function doPost(e) {
-  try {
-    if (!e || !e.postData || !e.postData.contents) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No data' })).setMimeType(ContentService.MimeType.JSON);
+        try {
+            AdminState.gisTokenClient = window.google.accounts.oauth2.initTokenClient({
+                client_id: AdminState.gdriveClientId,
+                scope: 'https://www.googleapis.com/auth/drive.file',
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        setGoogleDriveToken(tokenResponse.access_token, true);
+                        showAdminToast('تم تسجيل الدخول وتفويض Google Drive بنجاح!');
+                        closeDriveConfigModal();
+                    } else if (tokenResponse && tokenResponse.error) {
+                        showAdminToast('خطأ في مصادقة Google: ' + (tokenResponse.error_description || tokenResponse.error), false);
+                    }
+                }
+            });
+            return AdminState.gisTokenClient;
+        } catch (e) {
+            console.warn('[GIS Init Warning]', e);
+            return null;
+        }
     }
-    const data = JSON.parse(e.postData.contents);
-    if (data.action === 'delete' && data.fileId) {
-      DriveApp.getFileById(data.fileId).setTrashed(true);
-      return ContentService.createTextOutput(JSON.stringify({ success: true, action: 'delete' })).setMimeType(ContentService.MimeType.JSON);
-    }
-    const folder = DriveApp.getFolderById(FOLDER_ID);
-    let base64 = data.data;
-    let contentType = 'image/jpeg';
-    if (base64.indexOf(';base64,') > -1) {
-      const parts = base64.split(';base64,');
-      contentType = parts[0].replace('data:', '');
-      base64 = parts[1];
-    }
-    const decoded = Utilities.base64Decode(base64);
-    const filename = (data.filename || ('art_' + new Date().getTime() + '.jpg'));
-    const blob = Utilities.newBlob(decoded, contentType, filename);
-    const file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    const fileId = file.getId();
-    return ContentService.createTextOutput(JSON.stringify({
-      success: true,
-      fileId: fileId,
-      url: 'https://lh3.googleusercontent.com/d/' + fileId,
-      name: filename
-    })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
 
-function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({ status: 'online', folderId: FOLDER_ID })).setMimeType(ContentService.MimeType.JSON);
-}`;
+    function requestGoogleDriveOAuth() {
+        const client = initGisTokenClient();
+        if (client) {
+            client.requestAccessToken({ prompt: 'consent' });
+        } else {
+            showAdminToast('مكتبة Google قيد التحميل، أو يمكنك إدخال رمز الوصول (Access Token) يدوياً في الأسفل', false);
+        }
+    }
 
     function ensureDriveConfigModalDOM() {
         if (document.getElementById('gdrive-cfg-modal')) return;
@@ -132,10 +134,10 @@ function doGet(e) {
         <div class="gdrive-cfg-card">
             <div class="gdrive-cfg-header">
                 <div style="display:flex;align-items:center;gap:0.75rem">
-                    <i class="fa-brands fa-google-drive" style="color:#10b981;font-size:1.4rem"></i>
+                    <i class="fa-brands fa-google-drive" style="color:#10b981;font-size:1.5rem"></i>
                     <div>
-                        <h3 style="margin:0;font-size:1.15rem;font-weight:700">ربط وتفعيل الرفع إلى Google Drive</h3>
-                        <span style="font-size:0.75rem;color:var(--text-secondary)">مجلد المعرض المعتمد: Gallery_Images (1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm)</span>
+                        <h3 style="margin:0;font-size:1.15rem;font-weight:700">ربط وتفويض Google Drive (API v3)</h3>
+                        <span style="font-size:0.75rem;color:var(--text-secondary)">المجلد المعتمد: Gallery_Images (1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm)</span>
                     </div>
                 </div>
                 <button type="button" class="admin-close-btn" id="gdrive-cfg-close" aria-label="إغلاق">
@@ -143,59 +145,69 @@ function doGet(e) {
                 </button>
             </div>
 
-            <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:1.1rem;line-height:1.6">
-                لكي تُرفع الصور من هاتفك مباشرة إلى مجلد Google Drive بدون تخزينها كبيانات داخل قاعدة البيانات، قمنا بتجهيز سكريبت تلقائي Google Apps Script يمكنك نشره خلال 30 ثانية:
+            <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:1.2rem;line-height:1.6">
+                نظام الرفع الذكي المباشر (مثل تطبيق Aqeeda) يرفع ويحذف الصور داخل مجلد المعرض في Google Drive تلقائياً بدون سكريبتات أو تعقيدات.
             </p>
 
-            <div class="gdrive-step-box">
-                <div class="gdrive-step-title">
-                    <span style="background:var(--accent-gold);color:#000;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900">1</span>
-                    <span>نسخ كود السكريبت الجاهز (google_apps_script.js)</span>
+            <!-- Method 1: One-Click Google OAuth Sign-In -->
+            <div class="gdrive-step-box" style="background:rgba(66, 133, 244, 0.05);border-color:rgba(66, 133, 244, 0.3)">
+                <div class="gdrive-step-title" style="color:#4285f4">
+                    <i class="fa-brands fa-google"></i>
+                    <span>تسجيل الدخول والتفويض المباشر (One-Click Sign-In)</span>
                 </div>
                 <div class="gdrive-step-desc">
-                    الكود مبرمج ومربوط مباشرة بالمجلد <code>Gallery_Images</code> مع معالجة الصور والتصاريح تلقائياً.
+                    اضغط هنا لتسجيل الدخول بحساب Google وتفويض صلاحية إدارة صور المعرض (Drive File Scope) بنقرة واحدة.
                 </div>
-                <div style="margin-top:0.6rem;display:flex;gap:0.5rem;flex-wrap:wrap">
-                    <button type="button" class="ozeum-mini-pill-btn" id="gdrive-copy-code-btn" style="padding:0.35rem 0.8rem;font-size:0.75rem;color:var(--accent-gold);border-color:var(--border-gold)">
-                        <i class="fa-regular fa-copy"></i> نسخ كود السكريبت بنقرة واحدة
+                <div style="margin-top:0.85rem">
+                    <button type="button" id="gdrive-oauth-btn" class="admin-btn-primary" style="background:#4285f4;color:#fff;border:none;width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.9rem;border-radius:6px">
+                        <i class="fa-brands fa-google"></i> تسجيل الدخول بحساب Google وتفويض المعرض
                     </button>
-                    <a href="https://script.google.com/home/start" target="_blank" class="ozeum-mini-pill-btn" style="padding:0.35rem 0.8rem;font-size:0.75rem">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح موقع Google Apps Script
-                    </a>
                 </div>
             </div>
 
+            <!-- Method 2: Direct Access Token / Custom Key -->
             <div class="gdrive-step-box">
                 <div class="gdrive-step-title">
-                    <span style="background:var(--accent-gold);color:#000;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900">2</span>
-                    <span>خطوات النشر (Deploy كـ Web app)</span>
+                    <i class="fa-solid fa-key"></i>
+                    <span>أو إدخال رمز الوصول الفوري (OAuth Access Token)</span>
                 </div>
                 <div class="gdrive-step-desc">
-                    1. في Google Apps Script، أنشئ "New project" والصق الكود المحفوظ.<br>
-                    2. اضغط <strong>Deploy</strong> (في الأعلى) &gt; <strong>New deployment</strong> &gt; اختر نوع <strong>Web app</strong>.<br>
-                    3. اجعل Execute as: <strong>Me</strong>، واجعل Who has access: <strong>Anyone</strong>.<br>
-                    4. اضغط Deploy واقبل الصلاحيات، ثم انسخ رابط الـ Web App URL الناتج.
+                    إذا كان لديك رمز وصول مؤقت من Google OAuth Playground أو تطبيق الهاتف، الصقه هنا للتفعيل الفوري:
+                </div>
+                <div class="admin-input-group" style="margin-top:0.6rem">
+                    <input type="password" id="gdrive-token-input" class="admin-input" placeholder="ya29.a0AfH6SM..." dir="ltr" style="font-family:monospace;font-size:0.8rem">
+                </div>
+                <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end">
+                    <button type="button" class="ozeum-mini-pill-btn" id="gdrive-save-token-btn" style="padding:0.4rem 1rem;font-size:0.78rem;color:var(--accent-gold);border-color:var(--border-gold)">
+                        <i class="fa-solid fa-floppy-disk"></i> حفظ وتفعيل الرمز
+                    </button>
                 </div>
             </div>
 
-            <div class="gdrive-step-box">
-                <div class="gdrive-step-title">
-                    <span style="background:var(--accent-gold);color:#000;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900">3</span>
-                    <span>لصق وتفعيل الرابط في المعرض</span>
+            <!-- Advanced Settings (Client ID) -->
+            <div class="gdrive-step-box" style="background:transparent;border:1px dashed var(--border-color)">
+                <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" id="gdrive-toggle-adv">
+                    <span style="font-size:0.78rem;color:var(--text-secondary)"><i class="fa-solid fa-gear"></i> إعدادات متقدمة (Google OAuth Client ID)</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:var(--text-secondary)"></i>
                 </div>
-                <div class="admin-input-group" style="margin-top:0.5rem">
-                    <label for="gdrive-url-input" style="font-size:0.78rem">رابط الويب آب (Web App URL)</label>
-                    <input type="url" id="gdrive-url-input" class="admin-input" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr" style="font-family:monospace;font-size:0.82rem">
+                <div id="gdrive-adv-panel" style="display:none;margin-top:0.75rem">
+                    <label for="gdrive-client-id-input" style="font-size:0.72rem;color:var(--text-secondary);display:block;margin-bottom:0.3rem">معرف العميل (Client ID)</label>
+                    <input type="text" id="gdrive-client-id-input" class="admin-input" dir="ltr" style="font-family:monospace;font-size:0.75rem">
                 </div>
             </div>
 
-            <div style="display:flex;gap:0.75rem;margin-top:1.2rem;justify-content:flex-end">
-                <button type="button" class="ozeum-mini-pill-btn" id="gdrive-unlink-btn" style="display:none;color:#f43f5e;border-color:rgba(244,63,94,0.35);padding:0.5rem 1rem">
-                    <i class="fa-solid fa-link-slash"></i> إلغاء الربط
-                </button>
-                <button type="button" class="admin-btn-primary" id="gdrive-save-btn" style="padding:0.6rem 1.4rem">
-                    <i class="fa-solid fa-cloud-check"></i> حفظ وتفعيل الرفع التلقائي
-                </button>
+            <div style="display:flex;gap:0.75rem;margin-top:1.2rem;justify-content:space-between;align-items:center">
+                <div>
+                    <span id="gdrive-modal-status-text" style="font-size:0.78rem;color:var(--text-secondary)"></span>
+                </div>
+                <div style="display:flex;gap:0.6rem">
+                    <button type="button" class="ozeum-mini-pill-btn" id="gdrive-unlink-btn" style="display:none;color:#f43f5e;border-color:rgba(244,63,94,0.35);padding:0.5rem 1rem">
+                        <i class="fa-solid fa-link-slash"></i> إلغاء التفويض
+                    </button>
+                    <button type="button" class="ozeum-mini-pill-btn" id="gdrive-modal-done-btn" style="padding:0.5rem 1.2rem">
+                        إغلاق
+                    </button>
+                </div>
             </div>
         </div>
         `;
@@ -205,42 +217,92 @@ function doGet(e) {
         const closeBtn = document.getElementById('gdrive-cfg-close');
         if (closeBtn) closeBtn.addEventListener('click', closeDriveConfigModal);
 
+        const doneBtn = document.getElementById('gdrive-modal-done-btn');
+        if (doneBtn) doneBtn.addEventListener('click', closeDriveConfigModal);
+
         modalDiv.addEventListener('click', (e) => {
             if (e.target === modalDiv) closeDriveConfigModal();
         });
 
-        const copyBtn = document.getElementById('gdrive-copy-code-btn');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(GAS_CODE_SNIPPET)
-                    .then(() => showAdminToast('تم نسخ كود google_apps_script.js إلى الحافظة بنجاح!'))
-                    .catch(() => showAdminToast('تم تجهيز الكود في ملف google_apps_script.js بالمشروع', false));
+        // Method 1: Google OAuth button
+        const oauthBtn = document.getElementById('gdrive-oauth-btn');
+        if (oauthBtn) {
+            oauthBtn.addEventListener('click', () => {
+                requestGoogleDriveOAuth();
             });
         }
 
-        const saveBtn = document.getElementById('gdrive-save-btn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', handleSaveDriveScriptUrl);
+        // Method 2: Save Token button
+        const saveTokenBtn = document.getElementById('gdrive-save-token-btn');
+        if (saveTokenBtn) {
+            saveTokenBtn.addEventListener('click', () => {
+                const input = document.getElementById('gdrive-token-input');
+                if (!input) return;
+                const tokenVal = input.value.trim();
+                if (!tokenVal) {
+                    showAdminToast('يرجى إدخال رمز الوصول أولاً', false);
+                    return;
+                }
+                setGoogleDriveToken(tokenVal, true);
+                showAdminToast('تم تفعيل رمز الوصول لـ Google Drive بنجاح!');
+                closeDriveConfigModal();
+            });
         }
 
+        // Unlink button
         const unlinkBtn = document.getElementById('gdrive-unlink-btn');
         if (unlinkBtn) {
-            unlinkBtn.addEventListener('click', handleUnlinkDriveScriptUrl);
+            unlinkBtn.addEventListener('click', () => {
+                if (confirm('هل أنت متأكد من إلغاء تفويض Google Drive؟')) {
+                    setGoogleDriveToken(null);
+                    showAdminToast('تم إلغاء تفويض Google Drive');
+                    closeDriveConfigModal();
+                }
+            });
+        }
+
+        // Advanced toggle
+        const toggleAdv = document.getElementById('gdrive-toggle-adv');
+        const advPanel = document.getElementById('gdrive-adv-panel');
+        if (toggleAdv && advPanel) {
+            toggleAdv.addEventListener('click', () => {
+                const isHidden = advPanel.style.display === 'none';
+                advPanel.style.display = isHidden ? 'block' : 'none';
+            });
+        }
+
+        // Client ID input change
+        const clientIdInput = document.getElementById('gdrive-client-id-input');
+        if (clientIdInput) {
+            clientIdInput.value = AdminState.gdriveClientId;
+            clientIdInput.addEventListener('change', () => {
+                const v = clientIdInput.value.trim();
+                if (v) {
+                    AdminState.gdriveClientId = v;
+                    AdminState.gisTokenClient = null;
+                    localStorage.setItem('aj_gdrive_client_id', v);
+                    showAdminToast('تم حفظ معرف العميل الجديد');
+                }
+            });
         }
     }
 
     function openDriveConfigModal() {
         ensureDriveConfigModalDOM();
         const modal = document.getElementById('gdrive-cfg-modal');
-        const input = document.getElementById('gdrive-url-input');
+        const input = document.getElementById('gdrive-token-input');
         const unlinkBtn = document.getElementById('gdrive-unlink-btn');
+        const statusText = document.getElementById('gdrive-modal-status-text');
         if (!modal) return;
 
-        if (input && AdminState.driveScriptUrl) {
-            input.value = AdminState.driveScriptUrl;
+        if (AdminState.gdriveToken) {
+            if (input) input.value = AdminState.gdriveToken;
             if (unlinkBtn) unlinkBtn.style.display = 'inline-flex';
-        } else if (unlinkBtn) {
-            unlinkBtn.style.display = 'none';
+            if (statusText) statusText.innerHTML = '<span style="color:#10b981"><i class="fa-solid fa-circle-check"></i> التفويض نشط ومتصل</span>';
+        } else {
+            if (input) input.value = '';
+            if (unlinkBtn) unlinkBtn.style.display = 'none';
+            if (statusText) statusText.innerHTML = '<span style="color:#f59e0b"><i class="fa-solid fa-circle-exclamation"></i> غير متصل حالياً</span>';
         }
 
         modal.classList.add('active');
@@ -251,98 +313,137 @@ function doGet(e) {
         if (modal) modal.classList.remove('active');
     }
 
-    async function handleSaveDriveScriptUrl() {
-        const input = document.getElementById('gdrive-url-input');
-        const saveBtn = document.getElementById('gdrive-save-btn');
-        if (!input) return;
+    // ── Direct Google Drive File Upload & Public Permissions (API v3) ──
+    async function uploadToGoogleDriveV3(fileBlobOrDataUrl, filename) {
+        const token = AdminState.gdriveToken;
+        if (!token) {
+            throw new Error('Google Drive غير مفوض. يرجى تسجيل الدخول بحساب Google أو إدخال رمز الوصول.');
+        }
 
-        const val = input.value.trim();
-        if (!val || !val.startsWith('https://script.google.com/macros/s/')) {
-            showAdminToast('يرجى إدخال رابط صالح يبدأ بـ https://script.google.com/macros/s/...', false);
+        // Convert base64 / Data URL to Blob if needed
+        let blob;
+        let mimeType = 'image/jpeg';
+        if (fileBlobOrDataUrl instanceof Blob) {
+            blob = fileBlobOrDataUrl;
+            mimeType = blob.type || 'image/jpeg';
+        } else if (typeof fileBlobOrDataUrl === 'string') {
+            const match = fileBlobOrDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+            if (match) {
+                mimeType = match[1];
+                const binary = atob(match[2]);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                blob = new Blob([bytes], { type: mimeType });
+            } else {
+                throw new Error('تنسيق الصورة غير صالح للرفع');
+            }
+        } else {
+            throw new Error('الملف غير متوفر للرفع');
+        }
+
+        const safeFilename = filename || `art_${Date.now()}.jpg`;
+        const metadata = {
+            name: safeFilename,
+            parents: [GOOGLE_DRIVE_FOLDER_ID]
+        };
+
+        const boundary = '-------aj_gdrive_' + Date.now().toString(16);
+        const delimiter = `\r\n--${boundary}\r\n`;
+        const closeDelimiter = `\r\n--${boundary}--`;
+
+        const multipartBody = new Blob([
+            delimiter,
+            'Content-Type: application/json; charset=UTF-8\r\n\r\n',
+            JSON.stringify(metadata),
+            delimiter,
+            `Content-Type: ${mimeType}\r\n\r\n`,
+            blob,
+            closeDelimiter
+        ], { type: `multipart/related; boundary=${boundary}` });
+
+        const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: multipartBody
+        });
+
+        if (uploadRes.status === 401) {
+            // Token expired
+            setGoogleDriveToken(null);
+            openDriveConfigModal();
+            throw new Error('انتهت صلاحية جلسة Google Drive. يرجى إعادة تسجيل الدخول بحساب Google.');
+        }
+
+        if (!uploadRes.ok) {
+            const errData = await uploadRes.json().catch(() => ({}));
+            const errMsg = (errData && errData.error && errData.error.message) || `فشل الرفع برمز ${uploadRes.status}`;
+            throw new Error(errMsg);
+        }
+
+        const fileData = await uploadRes.json();
+        const fileId = fileData.id;
+        if (!fileId) {
+            throw new Error('لم يتم استلام معرف الملف من Google Drive');
+        }
+
+        // Make file publicly readable (reader / anyone, matching Aqeeda)
+        try {
+            await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    role: 'reader',
+                    type: 'anyone'
+                })
+            });
+        } catch (permErr) {
+            console.warn('[Drive Permission Warning]', permErr);
+        }
+
+        return {
+            fileId: fileId,
+            url: `https://lh3.googleusercontent.com/d/${fileId}`,
+            viewUrl: `https://drive.google.com/uc?export=view&id=${fileId}`,
+            name: fileData.name || safeFilename
+        };
+    }
+
+    // ── Safe Delete from Google Drive (API v3) ──
+    async function deleteFromGoogleDriveV3(fileId) {
+        if (!fileId) return;
+        const token = AdminState.gdriveToken;
+        if (!token) {
+            console.warn('[Drive Delete] No token available to delete file from Google Drive:', fileId);
             return;
         }
 
-        if (saveBtn) {
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...`;
-        }
-
         try {
-            const putRes = await fetch(`${FIREBASE_RTDB_BASE}/DriveScriptUrl.json`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(val)
+            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
-
-            if (putRes.ok) {
-                AdminState.driveScriptUrl = val;
-                updateDriveStatusBadge(true);
-                showAdminToast('تم ربط Google Drive بنجاح! سيتم رفع كل الصور مباشرة إلى مجلد Gallery_Images');
-                closeDriveConfigModal();
-            } else {
-                throw new Error('تعذر الحفظ في قاعدة بيانات Firebase');
+            if (res.status === 404) {
+                console.log('[Drive Delete] File already deleted or not found:', fileId);
+            } else if (!res.ok) {
+                console.warn('[Drive Delete] Response status:', res.status);
             }
         } catch (err) {
-            showAdminToast('خطأ أثناء حفظ الرابط: ' + err.message, false);
-        } finally {
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = `<i class="fa-solid fa-cloud-check"></i> حفظ وتفعيل الرفع التلقائي`;
-            }
+            console.warn('[Drive Delete Warning]', err);
         }
     }
 
-    async function handleUnlinkDriveScriptUrl() {
-        if (!confirm('هل أنت متأكد من إلغاء ربط Google Drive؟')) return;
-        try {
-            await fetch(`${FIREBASE_RTDB_BASE}/DriveScriptUrl.json`, { method: 'DELETE' });
-            AdminState.driveScriptUrl = null;
-            updateDriveStatusBadge(false);
-            const input = document.getElementById('gdrive-url-input');
-            if (input) input.value = '';
-            showAdminToast('تم إلغاء ربط Google Drive');
-            closeDriveConfigModal();
-        } catch (err) {
-            showAdminToast('تعذر إلغاء الربط: ' + err.message, false);
-        }
-    }
-
-    // ── Direct Google Drive File Upload (CORS-Safe via Google Apps Script) ──
-    async function uploadToGoogleDrive(gasUrl, base64Data, filename) {
-        const cleanUrl = String(gasUrl || '').trim();
-        if (!cleanUrl) {
-            throw new Error('رابط Google Apps Script غير متوفر');
-        }
-
-        const response = await fetch(cleanUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
-            body: JSON.stringify({
-                data: base64Data,
-                filename: filename || `art_${Date.now()}.jpg`
-            }),
-            redirect: 'follow'
-        });
-
-        if (!response.ok) {
-            throw new Error(`تعذر الاتصال بخادم Google Drive (رمز الخطأ: ${response.status})`);
-        }
-
-        const resJson = await response.json();
-        if (!resJson || !resJson.success) {
-            throw new Error((resJson && resJson.error) || 'فشل خادم Google Drive في حفظ الملف داخل المجلد');
-        }
-
-        return resJson;
-    }
-
-    // ── Check Database Sync Status ──
-    async function checkSyncStatus() {
-        try {
-            await loadDriveScriptUrl();
-        } catch (_) {}
+    // ── Check Sync Status ──
+    function checkSyncStatus() {
+        updateDriveStatusBadge(Boolean(AdminState.gdriveToken));
     }
 
     // ── Dynamic Admin Modal DOM Injection (Pure Direct Upload - No Share Links) ──
@@ -1127,15 +1228,10 @@ function doGet(e) {
             let finalImageSrc = null;
             let driveFileId = null;
 
-            // 1. If user selected a new file from phone/PC -> Upload DIRECTLY to Google Drive
-            if (AdminState.currentFile && AdminState.currentFileDataUrl) {
-                // Check if Google Drive Script URL is loaded
-                if (!AdminState.driveScriptUrl) {
-                    await loadDriveScriptUrl();
-                }
-
-                if (!AdminState.driveScriptUrl) {
-                    showAdminToast('يجب ربط Google Drive أولاً لرفع الصور مباشرة إلى المجلد', false);
+            // 1. If user selected a new file from phone/PC -> Upload DIRECTLY to Google Drive (API v3)
+            if (AdminState.currentFile && (AdminState.currentFileDataUrl || AdminState.currentFile)) {
+                if (!AdminState.gdriveToken) {
+                    showAdminToast('يجب تفويض Google Drive أولاً لرفع الصور مباشرة إلى المجلد', false);
                     openDriveConfigModal();
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -1145,13 +1241,12 @@ function doGet(e) {
                 }
 
                 if (submitBtn) {
-                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الصورة إلى Google Drive (Gallery_Images)...`;
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الصورة مباشرة إلى Google Drive (Gallery_Images)...`;
                 }
 
                 try {
-                    const driveResult = await uploadToGoogleDrive(
-                        AdminState.driveScriptUrl,
-                        AdminState.currentFileDataUrl,
+                    const driveResult = await uploadToGoogleDriveV3(
+                        AdminState.currentFile || AdminState.currentFileDataUrl,
                         AdminState.currentFile.name
                     );
 
@@ -1264,14 +1359,9 @@ function doGet(e) {
 
         showAdminToast('جاري الحذف وإعادة تنظيم التسلسل...');
 
-        // If work had a Google Drive file ID, trash it in Google Drive folder
-        if (work && work.driveFileId && AdminState.driveScriptUrl) {
-            fetch(AdminState.driveScriptUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'delete', fileId: work.driveFileId }),
-                redirect: 'follow'
-            }).catch(e => console.warn('[Drive Delete Warning]', e));
+        // If work had a Google Drive file ID, delete it in Google Drive (API v3)
+        if (work && work.driveFileId) {
+            deleteFromGoogleDriveV3(work.driveFileId).catch(e => console.warn('[Drive Delete Warning]', e));
         }
 
         // Filter out target post
@@ -1508,7 +1598,7 @@ function doGet(e) {
         }
     };
 
-    // Load Google Drive Script URL on bootstrap
-    loadDriveScriptUrl();
+    // Check Google Drive connection status on bootstrap
+    checkSyncStatus();
 
 })(window);
