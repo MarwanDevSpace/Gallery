@@ -12,7 +12,10 @@
     const SEC_KEY = (window.AJGateway && window.AJGateway.getSecKey()) || 'a4f9b8c2d1e0f7e6d5c4b3a291827364';
 
 
-    // ── Publisher State ──
+    // ── Publisher State & Google Drive Integration ──
+    const GOOGLE_DRIVE_FOLDER_ID = '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm';
+    const GOOGLE_DRIVE_FOLDER_URL = `https://drive.google.com/drive/folders/${GOOGLE_DRIVE_FOLDER_ID}?usp=sharing`;
+
     const AdminState = {
         isAuthenticated: false,
         artworks: [],
@@ -20,6 +23,7 @@
         currentFile: null,
         currentFileDataUrl: null,
         currentImageUrl: null,
+        currentDriveFileId: null,
         currentDimensions: null
     };
 
@@ -147,19 +151,25 @@
                                 </button>
                             </div>
 
-                            <!-- Image URL / Source Input Box -->
-                            <div class="drive-input-box">
-                                <div class="drive-input-header">
-                                    <span style="font-size:0.82rem;font-weight:700;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.4rem">
-                                        <i class="fa-solid fa-link" style="color:var(--accent-gold)"></i> رابط الصورة المباشر
+                            <!-- Google Drive Integration & Folder Hub -->
+                            <div class="drive-input-box" style="background:linear-gradient(135deg, rgba(210,176,121,0.08) 0%, rgba(20,20,30,0.6) 100%);border:1px solid rgba(210,176,121,0.28);border-radius:10px;padding:1rem;margin-bottom:1rem">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem">
+                                    <span style="font-size:0.85rem;font-weight:700;color:var(--accent-gold);display:inline-flex;align-items:center;gap:0.45rem">
+                                        <i class="fa-brands fa-google-drive"></i> مجلد الوسائط: Gallery_Images
                                     </span>
+                                    <a href="${GOOGLE_DRIVE_FOLDER_URL}" target="_blank" rel="noopener noreferrer" class="ozeum-mini-pill-btn" style="background:var(--accent-gold);color:#0a0a0f;font-weight:700;padding:0.35rem 0.85rem;display:inline-flex;align-items:center;gap:0.35rem;text-decoration:none">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح مجلد Google Drive ↗
+                                    </a>
                                 </div>
-                                <div class="admin-input-group" style="margin:0">
-                                    <input type="text" id="input-drive-link" class="admin-input" placeholder="الصق رابط أي صورة أو رابط مشاركة..." dir="ltr">
+                                <div class="admin-input-group" style="margin:0 0 0.35rem 0">
+                                    <label for="input-drive-link" style="font-size:0.78rem;margin-bottom:0.3rem">رابط مشاركة الصورة من Google Drive (أو معرّف الملف File ID):</label>
+                                    <input type="text" id="input-drive-link" class="admin-input" placeholder="الصق رابط مشاركة الصورة من Google Drive أو معرّفها..." dir="ltr">
                                 </div>
-                                <span style="font-size:0.7rem;color:var(--text-muted)">
-                                    يتم قياس أبعاد الصورة ونسبتها تلقائياً وعرضها بنظام متحفي سلس.
-                                </span>
+                                <div id="drive-link-status" style="display:none;margin-top:0.45rem;font-size:0.75rem;padding:0.35rem 0.65rem;border-radius:6px"></div>
+                                <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.5;margin-top:0.4rem">
+                                    <i class="fa-solid fa-circle-info" style="color:var(--accent-gold)"></i> 
+                                    ارفع صورتك في المجلد، ثم اضغط (مشاركة ➔ نسخ الرابط) والصقه هنا. يتم قياس الأبعاد وبثها بدقة 4K أصلية بدون حفظ Base64 في قاعدة البيانات.
+                                </div>
                             </div>
 
                             <div style="text-align:center;margin:0.5rem 0;font-size:0.72rem;color:var(--text-muted)">
@@ -566,19 +576,33 @@
         reader.readAsDataURL(file);
     }
 
-    // ── Universal Smart Image Link Processor ──
+    // ── Universal Smart Image Link Processor (Specialized Google Drive Integration) ──
     function processImageLink(inputVal) {
         if (!inputVal || typeof inputVal !== 'string') return;
         const trimmed = inputVal.trim();
         if (!trimmed) return;
 
         let streamUrl = trimmed;
-        // Automatically resolve Google Drive links if provided
-        if (trimmed.includes('drive.google.com') || trimmed.includes('/d/')) {
-            const fileId = (window.AJGateway && window.AJGateway.extractDriveId) ? window.AJGateway.extractDriveId(trimmed) : (trimmed.match(/([a-zA-Z0-9_-]{25,50})/) ? trimmed.match(/([a-zA-Z0-9_-]{25,50})/)[1] : null);
-            if (fileId) {
-                streamUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
+        let driveId = null;
+        const statusEl = document.getElementById('drive-link-status');
+
+        // Automatically resolve Google Drive links (URL or raw File ID)
+        if (trimmed.includes('drive.google.com') || trimmed.includes('/d/') || /^[a-zA-Z0-9_-]{25,50}$/.test(trimmed)) {
+            driveId = (window.AJGateway && window.AJGateway.extractDriveId) ? window.AJGateway.extractDriveId(trimmed) : (trimmed.match(/([a-zA-Z0-9_-]{25,50})/) ? trimmed.match(/([a-zA-Z0-9_-]{25,50})/)[1] : null);
+            if (driveId) {
+                streamUrl = `https://lh3.googleusercontent.com/d/${driveId}`;
+                AdminState.currentDriveFileId = driveId;
+                if (statusEl) {
+                    statusEl.style.display = 'block';
+                    statusEl.style.background = 'rgba(16, 185, 129, 0.12)';
+                    statusEl.style.color = '#10b981';
+                    statusEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> متصل بـ Google Drive · معرّف الملف: <code style="direction:ltr;background:rgba(0,0,0,0.3);padding:1px 4px;border-radius:3px">${driveId}</code>`;
+                }
             }
+        } else {
+            AdminState.currentDriveFileId = null;
+            if (statusEl) statusEl.style.display = 'none';
         }
 
         AdminState.currentFile = null;
@@ -593,7 +617,7 @@
             const nh = img.naturalHeight;
             const dim = calculateArtworkDimensions(nw, nh);
 
-            applyDetectedDimensions(dim, 'رابط مباشر');
+            applyDetectedDimensions(dim, driveId ? 'Google Drive' : 'رابط مباشر');
 
             const liveCv = document.getElementById('live-preview-canvas');
             const placeholder = document.getElementById('preview-placeholder');
@@ -605,30 +629,79 @@
                 }
             }
 
-            showAdminToast(`تم قياس أبعاد العمل: ${nw}×${nh} (${dim.orientation} · نسبة ${dim.aspectRatio})`);
+            showAdminToast(`تم ربط الصورة بنجاح: ${nw}×${nh} (${dim.orientation} · نسبة ${dim.aspectRatio})`);
         };
 
         img.onerror = () => {
-            const imgFallback = new Image();
-            imgFallback.onload = () => {
-                const nw = imgFallback.naturalWidth;
-                const nh = imgFallback.naturalHeight;
-                const dim = calculateArtworkDimensions(nw, nh);
-                applyDetectedDimensions(dim, 'رابط مباشر');
+            // Google Drive Fallback: Try high-resolution thumbnail stream
+            if (driveId) {
+                const thumbUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=w2000`;
+                const imgThumb = new Image();
+                imgThumb.onload = () => {
+                    const nw = imgThumb.naturalWidth;
+                    const nh = imgThumb.naturalHeight;
+                    const dim = calculateArtworkDimensions(nw, nh);
+                    applyDetectedDimensions(dim, 'Google Drive (HD)');
+                    AdminState.currentImageUrl = thumbUrl;
 
-                const liveCv = document.getElementById('live-preview-canvas');
-                const placeholder = document.getElementById('preview-placeholder');
-                if (placeholder) placeholder.style.display = 'none';
-                if (liveCv && window.Img2Preview) {
-                    liveCv.style.display = 'block';
-                    Img2Preview.paint(liveCv, streamUrl, { autoHeight: true, watermark: true });
-                }
-                showAdminToast(`تم قياس أبعاد العمل: ${dim.orientation} · نسبة ${dim.aspectRatio}`);
-            };
-            imgFallback.onerror = () => {
-                showAdminToast('تعذر تحميل الصورة من هذا الرابط — تأكد من صحته وإمكانية الوصول إليه', false);
-            };
-            imgFallback.src = streamUrl;
+                    const liveCv = document.getElementById('live-preview-canvas');
+                    const placeholder = document.getElementById('preview-placeholder');
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (liveCv && window.Img2Preview) {
+                        liveCv.style.display = 'block';
+                        Img2Preview.paint(liveCv, thumbUrl, { autoHeight: true, watermark: true });
+                    }
+                    showAdminToast(`تم ربط الصورة بنجاح من Google Drive (${dim.orientation})`);
+                };
+                imgThumb.onerror = () => {
+                    const imgFallback = new Image();
+                    imgFallback.onload = () => {
+                        const nw = imgFallback.naturalWidth;
+                        const nh = imgFallback.naturalHeight;
+                        const dim = calculateArtworkDimensions(nw, nh);
+                        applyDetectedDimensions(dim, 'رابط مباشر');
+                        const liveCv = document.getElementById('live-preview-canvas');
+                        const placeholder = document.getElementById('preview-placeholder');
+                        if (placeholder) placeholder.style.display = 'none';
+                        if (liveCv && window.Img2Preview) {
+                            liveCv.style.display = 'block';
+                            Img2Preview.paint(liveCv, streamUrl, { autoHeight: true, watermark: true });
+                        }
+                    };
+                    imgFallback.onerror = () => {
+                        if (statusEl && driveId) {
+                            statusEl.style.display = 'block';
+                            statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
+                            statusEl.style.color = '#f87171';
+                            statusEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                            statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> يرجى التأكد من تفعيل إذن المشاركة للصورة: (أي شخص لديه الرابط يمكنه العرض Anyone with the link)`;
+                        }
+                        showAdminToast('تأكد من تفعيل إذن المشاركة للصورة في Google Drive (أي شخص لديه الرابط)', false);
+                    };
+                    imgFallback.src = streamUrl;
+                };
+                imgThumb.src = thumbUrl;
+            } else {
+                const imgFallback = new Image();
+                imgFallback.onload = () => {
+                    const nw = imgFallback.naturalWidth;
+                    const nh = imgFallback.naturalHeight;
+                    const dim = calculateArtworkDimensions(nw, nh);
+                    applyDetectedDimensions(dim, 'رابط مباشر');
+                    const liveCv = document.getElementById('live-preview-canvas');
+                    const placeholder = document.getElementById('preview-placeholder');
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (liveCv && window.Img2Preview) {
+                        liveCv.style.display = 'block';
+                        Img2Preview.paint(liveCv, streamUrl, { autoHeight: true, watermark: true });
+                    }
+                    showAdminToast(`تم قياس أبعاد العمل: ${dim.orientation} · نسبة ${dim.aspectRatio}`);
+                };
+                imgFallback.onerror = () => {
+                    showAdminToast('تعذر تحميل الصورة من هذا الرابط — تأكد من صحته وإمكانية الوصول إليه', false);
+                };
+                imgFallback.src = streamUrl;
+            }
         };
 
         img.src = streamUrl;
@@ -770,7 +843,14 @@
         AdminState.currentFile = null;
         AdminState.currentFileDataUrl = null;
         AdminState.currentImageUrl = null;
+        AdminState.currentDriveFileId = null;
         AdminState.currentDimensions = null;
+
+        const statusEl = document.getElementById('drive-link-status');
+        if (statusEl) {
+            statusEl.style.display = 'none';
+            statusEl.innerHTML = '';
+        }
 
         const linkIn = document.getElementById('input-drive-link');
         if (linkIn) linkIn.value = '';
@@ -820,8 +900,21 @@
         document.getElementById('input-work-hero').checked = work.isHeroFeatured === true;
 
         const linkIn = document.getElementById('input-drive-link');
-        if (linkIn) {
-            linkIn.value = work.imageSrc || '';
+        const statusEl = document.getElementById('drive-link-status');
+
+        if (work.driveFileId) {
+            AdminState.currentDriveFileId = work.driveFileId;
+            if (linkIn) linkIn.value = `https://drive.google.com/file/d/${work.driveFileId}/view?usp=sharing`;
+            if (statusEl) {
+                statusEl.style.display = 'block';
+                statusEl.style.background = 'rgba(16, 185, 129, 0.12)';
+                statusEl.style.color = '#10b981';
+                statusEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> متصل بـ Google Drive · معرّف الملف: <code style="direction:ltr;background:rgba(0,0,0,0.3);padding:1px 4px;border-radius:3px">${work.driveFileId}</code>`;
+            }
+        } else if (work.imageSrc) {
+            if (linkIn) linkIn.value = work.imageSrc;
+            if (statusEl) statusEl.style.display = 'none';
         }
 
         AdminState.currentImageUrl = work.imageSrc || null;
@@ -831,7 +924,7 @@
             const dim = calculateArtworkDimensions(work.width, work.height);
             if (work.aspectRatio) dim.aspectRatio = work.aspectRatio;
             if (work.orientation) dim.orientation = work.orientation;
-            applyDetectedDimensions(dim, 'العمل الحالي');
+            applyDetectedDimensions(dim, work.driveFileId ? 'Google Drive' : 'العمل الحالي');
         } else if (work.aspectRatio) {
             const banner = document.getElementById('image-meta-banner');
             const aspectBadge = document.getElementById('detected-aspect-badge');
@@ -927,19 +1020,31 @@
                 isPublished: Boolean(formData.isPublished),
                 isHeroFeatured: Boolean(formData.isHeroFeatured),
                 createdAt: existingWork.createdAt || new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                _secKey: SEC_KEY
+                updatedAt: new Date().toISOString()
             };
 
-            // Image Source Resolution
+            // Image Source Resolution — Strict Protection Against Storing Raw Base64
             if (uploadedUrl) {
                 workRecord.imageSrc = uploadedUrl;
-            } else if (AdminState.currentFileDataUrl) {
-                workRecord.imageSrc = AdminState.currentFileDataUrl;
-            } else if (AdminState.currentImageUrl) {
+            } else if (AdminState.currentImageUrl && !AdminState.currentImageUrl.startsWith('data:')) {
                 workRecord.imageSrc = AdminState.currentImageUrl;
-            } else if (existingWork.imageSrc) {
+            } else if (AdminState.currentDriveFileId) {
+                workRecord.imageSrc = `https://lh3.googleusercontent.com/d/${AdminState.currentDriveFileId}`;
+            } else if (existingWork.imageSrc && !existingWork.imageSrc.startsWith('data:')) {
                 workRecord.imageSrc = existingWork.imageSrc;
+            } else {
+                showAdminToast('يرجى لصق رابط الصورة من Google Drive أو رفعها للمجلد لتجنب تخزين نصوص Base64', false);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = isEditing ? 'حفظ التعديلات' : '<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل في المعرض</span>';
+                }
+                return;
+            }
+
+            if (AdminState.currentDriveFileId) {
+                workRecord.driveFileId = AdminState.currentDriveFileId;
+            } else if (existingWork.driveFileId) {
+                workRecord.driveFileId = existingWork.driveFileId;
             }
 
             // Preserve or initialize likes and views
@@ -1001,7 +1106,7 @@
         }
     }
 
-    // ── Smart Delete Artwork with Contiguous Re-indexing ──
+    // ── Smart Delete Artwork with Contiguous Re-indexing & Resilient Fallback ──
     async function deleteWork(workId) {
         const index = AdminState.artworks.findIndex(w => String(w._firebaseKey) === String(workId) || String(w.id) === String(workId));
         const work = index !== -1 ? AdminState.artworks[index] : null;
@@ -1009,17 +1114,16 @@
 
         if (!confirm(`هل أنت متأكد من حذف العمل الفني ${title} نهائياً من المعرض؟`)) return;
 
-        try {
-            const remaining = AdminState.artworks.filter((_, idx) => idx !== index && String(_.id) !== String(workId) && String(_._firebaseKey) !== String(workId));
-            
-            const reindexed = remaining.map((item, idx) => {
-                const clean = { ...item };
-                delete clean._firebaseKey;
-                clean.id = 'work-' + (idx + 1);
-                clean._secKey = SEC_KEY;
-                return clean;
-            });
+        const remaining = AdminState.artworks.filter((_, idx) => idx !== index && String(_.id) !== String(workId) && String(_._firebaseKey) !== String(workId));
+        
+        const reindexed = remaining.map((item, idx) => {
+            const clean = { ...item };
+            delete clean._firebaseKey;
+            clean.id = 'work-' + (idx + 1);
+            return clean;
+        });
 
+        try {
             if (reindexed.length === 0) {
                 if (db) {
                     await db.ref('artworks').remove();
@@ -1047,8 +1151,29 @@
                 resetArtworkForm();
             }
         } catch (err) {
-            console.error('[Delete Error]', err);
-            showAdminToast('تعذر الحذف: ' + err.message, false);
+            console.error('[Delete Error - Trying REST Fallback]', err);
+            try {
+                const rtdbUrl = 'https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks.json';
+                if (reindexed.length === 0) {
+                    await fetch(rtdbUrl, { method: 'DELETE' });
+                } else {
+                    await fetch(rtdbUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(reindexed)
+                    });
+                }
+                AdminState.artworks = reindexed;
+                renderPublishedWorksGrid();
+                window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: AdminState.artworks }));
+                showAdminToast('تم حذف العمل الفني بنجاح');
+                if (String(AdminState.editingWorkId) === String(workId)) {
+                    resetArtworkForm();
+                }
+            } catch (fallbackErr) {
+                console.error('[Delete Fallback Error]', fallbackErr);
+                showAdminToast('تعذر الحذف: ' + err.message, false);
+            }
         }
     }
 
@@ -1063,14 +1188,13 @@
         try {
             if (db) {
                 await db.ref(`artworks/${targetKey}`).update({
-                    isHeroFeatured: newHeroState,
-                    _secKey: SEC_KEY
+                    isHeroFeatured: newHeroState
                 });
             } else {
                 await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks/${targetKey}.json`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ isHeroFeatured: newHeroState, _secKey: SEC_KEY })
+                    body: JSON.stringify({ isHeroFeatured: newHeroState })
                 });
             }
             work.isHeroFeatured = newHeroState;

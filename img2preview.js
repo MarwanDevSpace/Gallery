@@ -229,8 +229,17 @@
                     src = urls.standard;
                 }
 
+                // Auto-resolve Google Drive links into high-speed CDN streaming URL
+                if (typeof src === 'string' && (src.includes('drive.google.com') || src.includes('/d/'))) {
+                    const driveMatch = src.match(/\/d\/([a-zA-Z0-9_-]{25,50})/) || src.match(/[?&]id=([a-zA-Z0-9_-]{25,50})/);
+                    if (driveMatch) {
+                        src = `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+                    }
+                }
+
                 return new Promise((resolve, reject) => {
                     let triedWithoutCors = false;
+                    let triedThumbnailFallback = false;
                     const img = new Image();
 
                     const tryLoad = (useCors) => {
@@ -323,6 +332,12 @@
                     img.onerror = () => {
                         if (!triedWithoutCors) {
                             triedWithoutCors = true;
+                            tryLoad(false);
+                        } else if (!triedThumbnailFallback && typeof src === 'string' && src.includes('lh3.googleusercontent.com/d/')) {
+                            triedThumbnailFallback = true;
+                            const fId = src.split('/d/')[1].split(/[?#]/)[0];
+                            src = `https://drive.google.com/thumbnail?id=${fId}&sz=w2000`;
+                            triedWithoutCors = false;
                             tryLoad(false);
                         } else {
                             console.warn('[img2Preview] Could not load image from:', src);
