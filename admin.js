@@ -27,6 +27,7 @@
         isProcessingImage: false,
         gdriveToken: sessionStorage.getItem('aj_gdrive_token') || localStorage.getItem('aj_gdrive_token') || null,
         gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '199047107207-dlqa691pej8o13vequ9irc694vla1slm.apps.googleusercontent.com',
+        resolvedFolderId: localStorage.getItem('aj_gdrive_folder_id') || '1RMj4e81jVH3kyl3C59Mg2cJ4wzNtlEwY',
         gisTokenClient: null
     };
 
@@ -276,13 +277,22 @@
             saveTokenBtn.addEventListener('click', () => {
                 const input = document.getElementById('gdrive-token-input');
                 if (!input) return;
-                const tokenVal = input.value.trim();
-                if (!tokenVal) {
-                    showAdminToast('يرجى إدخال رمز الوصول أولاً', false);
+                let tokenVal = input.value.trim();
+                // Extract ya29 token if user pasted JSON or playground output
+                const jsonMatch = tokenVal.match(/"access_token"\s*:\s*"([^"]+)"/);
+                const rawMatch = tokenVal.match(/ya29\.[a-zA-Z0-9_-]+/);
+                if (jsonMatch && jsonMatch[1]) {
+                    tokenVal = jsonMatch[1];
+                } else if (rawMatch && rawMatch[0]) {
+                    tokenVal = rawMatch[0];
+                }
+
+                if (!tokenVal || !tokenVal.startsWith('ya29.')) {
+                    showAdminToast('يرجى إدخال رمز وصول صالح يبدأ بـ ya29...', false);
                     return;
                 }
                 setGoogleDriveToken(tokenVal, true);
-                showAdminToast('تم تفعيل رمز الوصول لـ Google Drive بنجاح!');
+                showAdminToast('تم تفعيل وحفظ تفويض Google Drive بنجاح!');
                 closeDriveConfigModal();
             });
         }
@@ -351,6 +361,69 @@
         if (modal) modal.classList.remove('active');
     }
 
+    // ── Smart Target Folder Resolver (Works with both full drive and drive.file scopes) ──
+    async function resolveTargetDriveFolder(token) {
+        if (AdminState.resolvedFolderId) return AdminState.resolvedFolderId;
+        const stored = localStorage.getItem('aj_gdrive_folder_id');
+        if (stored) {
+            AdminState.resolvedFolderId = stored;
+            return stored;
+        }
+
+        // 1. Try checking default folder ID
+        try {
+            const checkRes = await fetch(`https://www.googleapis.com/drive/v3/files/${GOOGLE_DRIVE_FOLDER_ID}?fields=id`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (checkRes.ok) {
+                AdminState.resolvedFolderId = GOOGLE_DRIVE_FOLDER_ID;
+                localStorage.setItem('aj_gdrive_folder_id', GOOGLE_DRIVE_FOLDER_ID);
+                return GOOGLE_DRIVE_FOLDER_ID;
+            }
+        } catch (_) {}
+
+        // 2. Search for existing Gallery_Images folder within token scope
+        try {
+            const searchRes = await fetch("https://www.googleapis.com/drive/v3/files?q=name = 'Gallery_Images' and mimeType = 'application/vnd.google-apps.folder' and trashed = false&fields=files(id,name)", {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                if (searchData.files && searchData.files.length > 0) {
+                    const foundId = searchData.files[0].id;
+                    AdminState.resolvedFolderId = foundId;
+                    localStorage.setItem('aj_gdrive_folder_id', foundId);
+                    return foundId;
+                }
+            }
+        } catch (_) {}
+
+        // 3. Automatically create Gallery_Images folder if needed
+        try {
+            const createRes = await fetch("https://www.googleapis.com/drive/v3/files", {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: 'Gallery_Images',
+                    mimeType: 'application/vnd.google-apps.folder'
+                })
+            });
+            if (createRes.ok) {
+                const createdData = await createRes.json();
+                if (createdData.id) {
+                    AdminState.resolvedFolderId = createdData.id;
+                    localStorage.setItem('aj_gdrive_folder_id', createdData.id);
+                    return createdData.id;
+                }
+            }
+        } catch (_) {}
+
+        return null;
+    }
+
     // ── Direct Google Drive File Upload & Public Permissions (API v3) ──
     async function uploadToGoogleDriveV3(fileBlobOrDataUrl, filename) {
         const token = AdminState.gdriveToken;
@@ -382,9 +455,10 @@
         }
 
         const safeFilename = filename || `art_${Date.now()}.jpg`;
+        const targetFolderId = await resolveTargetDriveFolder(token);
         const metadata = {
             name: safeFilename,
-            parents: [GOOGLE_DRIVE_FOLDER_ID]
+            ...(targetFolderId ? { parents: [targetFolderId] } : {})
         };
 
         const boundary = '-------aj_gdrive_' + Date.now().toString(16);
@@ -401,13 +475,35 @@
             closeDelimiter
         ], { type: `multipart/related; boundary=${boundary}` });
 
-        const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        let uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
             },
             body: multipartBody
         });
+
+        // If failed with 404 (folder not found in scope), retry directly to root Drive
+        if (uploadRes.status === 404 && targetFolderId) {
+            AdminState.resolvedFolderId = null;
+            localStorage.removeItem('aj_gdrive_folder_id');
+            const retryMeta = { name: safeFilename };
+            const retryBody = new Blob([
+                delimiter,
+                'Content-Type: application/json; charset=UTF-8\r\n\r\n',
+                JSON.stringify(retryMeta),
+                delimiter,
+                `Content-Type: ${mimeType}\r\n\r\n`,
+                blob,
+                closeDelimiter
+            ], { type: `multipart/related; boundary=${boundary}` });
+
+            uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: retryBody
+            });
+        }
 
         if (uploadRes.status === 401) {
             // Token expired
