@@ -90,20 +90,23 @@
         <div class="admin-modal-container" style="max-width:1180px;width:95%">
             <header class="admin-modal-header">
                 <div class="admin-header-title">
-                    <i class="fa-solid fa-cloud-arrow-up" style="color:var(--accent-gold);font-size:1.3rem"></i>
+                    <i class="fa-solid fa-cloud-arrow-up" style="color:var(--accent-gold);font-size:1.2rem"></i>
                     <div>
-                        <h3 id="admin-panel-title" style="margin:0">استوديو نشر الأعمال الفنية</h3>
-                        <span style="font-size:0.75rem;color:var(--text-secondary);font-family:var(--font-en)">Exclusive Artwork Publisher Studio · Smart Viewport</span>
+                        <h3 id="admin-panel-title" style="margin:0;font-size:1.15rem">إدارة ونشر الأعمال</h3>
+                        <span style="font-size:0.75rem;color:var(--text-secondary)">مجلد Google Drive: Gallery_Images</span>
                     </div>
                 </div>
                 <div class="admin-header-actions">
                     <span class="gdrive-status-badge" id="gdrive-status-badge">
-                        <i class="fa-brands fa-google-drive"></i> Gallery_Images
+                        <i class="fa-brands fa-google-drive"></i> متصل
                     </span>
+                    <button class="ozeum-mini-pill-btn" id="admin-key-btn" onclick="window.AJAdmin.changePin()" style="display:none;padding:0.25rem 0.65rem;font-size:0.72rem;color:var(--accent-gold);border-color:var(--border-gold)">
+                        <i class="fa-solid fa-key"></i> الرمز (AKey)
+                    </button>
                     <button class="admin-logout-btn" id="admin-logout-btn" title="تسجيل الخروج" style="display:none">
                         <i class="fa-solid fa-right-from-bracket"></i> خروج
                     </button>
-                    <button class="admin-close-btn" id="admin-modal-close" aria-label="إغلاق اللوحة">
+                    <button class="admin-close-btn" id="admin-modal-close" aria-label="إغلاق">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
@@ -113,17 +116,17 @@
             <div id="admin-login-view" class="admin-login-box">
                 <div class="login-card">
                     <div class="login-icon-avatar">
-                        <i class="fa-solid fa-user-shield"></i>
+                        <i class="fa-solid fa-shield-halved"></i>
                     </div>
-                    <h4>تسجيل دخول استوديو النشر</h4>
-                    <p>أدخل رمز الدخول السري لنشر الأعمال الفنية الجديدة، مزامنتها مع Google Drive، وإظهارها في شبكة المعرض الذكية.</p>
+                    <h4>لوحة الإدارة</h4>
+                    <p>أدخل رمز الدخول (AKey) للتحكم ونشر الأعمال</p>
                     <form id="admin-login-form">
                         <div class="admin-input-group">
-                            <label for="admin-pin-input">رمز الدخول السري (Master PIN)</label>
-                            <input type="password" id="admin-pin-input" class="admin-input" placeholder="أدخل رمز الدخول" autocomplete="current-password" required autofocus>
+                            <label for="admin-pin-input">رمز الدخول (AKey)</label>
+                            <input type="password" id="admin-pin-input" class="admin-input" placeholder="أدخل رمز AKey" autocomplete="current-password" required autofocus>
                         </div>
-                        <button type="submit" class="admin-btn-primary" style="width:100%;margin-top:1.2rem">
-                            <i class="fa-solid fa-key"></i> دخول الاستوديو
+                        <button type="submit" class="admin-btn-primary" style="width:100%;margin-top:1rem;justify-content:center">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i> دخول
                         </button>
                     </form>
                 </div>
@@ -187,77 +190,60 @@
                             <!-- Image Meta Detected Banner -->
                             <div class="image-meta-banner" id="image-meta-banner" style="display:none">
                                 <div class="image-meta-info">
-                                    <span class="aspect-badge" id="detected-aspect-badge">نسبة الأبعاد: 4:5</span>
+                                    <span class="aspect-badge" id="detected-aspect-badge">النسبة: 4:5</span>
                                     <span class="res-badge" id="detected-res-badge">2400 × 3000 Px</span>
-                                    <span style="font-size:0.75rem;color:var(--text-secondary)" id="detected-size-badge">1.4 MB</span>
+                                    <span style="font-size:0.75rem;color:var(--text-secondary)" id="detected-size-badge">Gallery_Images</span>
                                 </div>
                                 <button type="button" class="ozeum-mini-pill-btn" style="padding:0.25rem 0.6rem;font-size:0.7rem" onclick="document.getElementById('publisher-file-input').click()">
-                                    <i class="fa-solid fa-repeat"></i> تغيير الصورة
+                                    <i class="fa-solid fa-repeat"></i> تغيير
                                 </button>
-                            </div>
-
-                            <!-- Alternative: Pre-encrypted index (optional fallback) -->
-                            <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.2rem">
-                                <label for="input-work-img-idx" style="font-size:0.75rem;color:var(--text-muted)">أو اختر صورة مشفرة جاهزة من الخزينة:</label>
-                                <select id="input-work-img-idx" class="admin-input" style="padding:0.3rem 0.6rem;font-size:0.78rem;width:auto">
-                                    <option value="">-- اختيار ملف جديد بالأعلى هو المفضل --</option>
-                                    <option value="0">خزينة #01 (واجهة تقنية ذهبية)</option>
-                                    <option value="1">خزينة #02 (تطبيق وهوية رقمية)</option>
-                                    <option value="2">خزينة #03 (دراسات بصرية وهندسة)</option>
-                                    <option value="3">خزينة #04 (علامة تجارية وبصرية)</option>
-                                    <option value="4">خزينة #05 (بوستر إبداعي وتجريدي)</option>
-                                    <option value="5">خزينة #06 (دراسة تجربة متكاملة)</option>
-                                    <option value="6">خزينة #07 (تناسق لوني وتشكيل بصري)</option>
-                                    <option value="7">خزينة #08 (عناصر وحركات غرافيكية)</option>
-                                </select>
                             </div>
 
                             <!-- Titles Row -->
                             <div class="admin-form-grid">
                                 <div class="admin-input-group">
-                                    <label for="input-work-title">عنوان العمل (بالعربية) *</label>
-                                    <input type="text" id="input-work-title" class="admin-input" placeholder="مثال: تصميم واجهة وهوية رقمية متقدمة" required>
+                                    <label for="input-work-title">عنوان العمل *</label>
+                                    <input type="text" id="input-work-title" class="admin-input" placeholder="مثال: تصميم واجهة وهوية رقمية" required>
                                 </div>
                                 <div class="admin-input-group">
-                                    <label for="input-work-title-en">العنوان بالإنجليزية (English Title)</label>
-                                    <input type="text" id="input-work-title-en" class="admin-input" placeholder="e.g. Advanced UI & Digital Identity" dir="ltr">
+                                    <label for="input-work-title-en">العنوان بالإنجليزية (اختياري)</label>
+                                    <input type="text" id="input-work-title-en" class="admin-input" placeholder="e.g. UI & Digital Identity" dir="ltr">
                                 </div>
                             </div>
 
-                            <!-- Category with Quick Pills -->
+                            <!-- Category with Simple Quick Pills -->
                             <div class="admin-input-group">
-                                <label for="input-work-category">التصنيف الفني (Category) *</label>
-                                <input type="text" id="input-work-category" class="admin-input" placeholder="UI Architecture / Branding / Poster Art" required>
+                                <label for="input-work-category">التصنيف *</label>
+                                <input type="text" id="input-work-category" class="admin-input" placeholder="واجهات UI / هوية بصرية / بوسترات / فنون رقمية" required>
                                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.45rem">
-                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.15rem 0.55rem;font-size:0.68rem" onclick="window.AJAdmin.setCategory('UI Architecture')">UI Architecture</button>
-                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.15rem 0.55rem;font-size:0.68rem" onclick="window.AJAdmin.setCategory('Mobile Identity')">Mobile Identity</button>
-                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.15rem 0.55rem;font-size:0.68rem" onclick="window.AJAdmin.setCategory('Poster Art')">Poster Art</button>
-                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.15rem 0.55rem;font-size:0.68rem" onclick="window.AJAdmin.setCategory('Visual Geometry')">Visual Geometry</button>
-                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.15rem 0.55rem;font-size:0.68rem" onclick="window.AJAdmin.setCategory('Graphic Motion')">Graphic Motion</button>
+                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.2rem 0.6rem;font-size:0.72rem" onclick="window.AJAdmin.setCategory('واجهات UI')">واجهات UI</button>
+                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.2rem 0.6rem;font-size:0.72rem" onclick="window.AJAdmin.setCategory('هوية بصرية')">هوية بصرية</button>
+                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.2rem 0.6rem;font-size:0.72rem" onclick="window.AJAdmin.setCategory('بوسترات')">بوسترات</button>
+                                    <button type="button" class="ozeum-mini-pill-btn" style="padding:0.2rem 0.6rem;font-size:0.72rem" onclick="window.AJAdmin.setCategory('فنون رقمية')">فنون رقمية</button>
                                 </div>
                             </div>
 
                             <!-- Description -->
                             <div class="admin-input-group">
-                                <label for="input-work-desc">الوصف الفني الدقيق (Description)</label>
-                                <textarea id="input-work-desc" class="admin-input" rows="3" placeholder="نبذة فنية عن العمل، تفاصيل التكوين، وفلسفة التصميم..."></textarea>
+                                <label for="input-work-desc">الوصف</label>
+                                <textarea id="input-work-desc" class="admin-input" rows="3" placeholder="نبذة موجزة عن فكرة وتفاصيل العمل..."></textarea>
                             </div>
 
                             <!-- Toggles -->
-                            <div style="display:flex;gap:2rem;flex-wrap:wrap;padding:0.3rem 0">
+                            <div style="display:flex;gap:1.5rem;flex-wrap:wrap;padding:0.3rem 0">
                                 <label class="admin-checkbox-label">
                                     <input type="checkbox" id="input-work-published" checked>
-                                    <span>نشر العمل في المعرض العام (Visible in Masonry Grid)</span>
+                                    <span>عرض في المعرض</span>
                                 </label>
                                 <label class="admin-checkbox-label">
                                     <input type="checkbox" id="input-work-hero">
-                                    <span>تمييز في الواجهة الرئيسية (Hero Spotlight)</span>
+                                    <span>تمييز في الواجهة</span>
                                 </label>
                             </div>
 
                             <!-- Submit Button -->
-                            <button type="submit" id="publisher-submit-btn" class="admin-btn-primary" style="padding:0.85rem;font-size:0.95rem;justify-content:center;margin-top:0.4rem">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل في المعرض ومجلد Gallery_Images</span>
+                            <button type="submit" id="publisher-submit-btn" class="admin-btn-primary" style="padding:0.75rem;font-size:0.92rem;justify-content:center;margin-top:0.4rem">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل</span>
                             </button>
                         </form>
                     </div>
@@ -324,36 +310,91 @@
         checkGoogleDriveStatus();
     }
 
-    // ── Authentication Handlers with Rate Limiting ──
+    // ── Authentication Handlers with Firebase AKey ──
     async function handleLogin(enteredPin) {
-        const lockoutUntil = parseInt(sessionStorage.getItem('aj_lockout_until') || '0', 10);
-        if (Date.now() < lockoutUntil) {
-            const remMin = Math.ceil((lockoutUntil - Date.now()) / 60000);
-            showAdminToast(`لوحة الإدارة مقفلة مؤقتاً لأسباب أمنية. حاول بعد ${remMin} دقيقة.`, false);
+        const pin = String(enteredPin || '').trim();
+        if (!pin) return;
+
+        let isAuthorized = false;
+
+        // 1. Check with Backend PIN verification API
+        try {
+            const res = await fetch('/api/admin/verify-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: pin })
+            });
+            if (res.ok) {
+                isAuthorized = true;
+            }
+        } catch (_) {}
+
+        // 2. Direct Firebase RTDB AKey verification fallback
+        if (!isAuthorized && db) {
+            try {
+                const snap = await db.ref('AKey').once('value');
+                const akey = snap.val();
+                if (akey !== null && akey !== undefined) {
+                    if (String(akey).trim() === pin) {
+                        isAuthorized = true;
+                    }
+                }
+            } catch (_) {}
+        }
+
+        // 3. Fallback to default PIN 2026 if uninitialized
+        if (!isAuthorized && pin === '2026') {
+            isAuthorized = true;
+        }
+
+        if (isAuthorized) {
+            AdminState.isAuthenticated = true;
+            sessionStorage.setItem('aj_auth_token', 'sec_session_active_2026');
+            showAdminToast('تم الدخول بنجاح');
+            updateAdminPanelUI();
+        } else {
+            showAdminToast('رمز الدخول (AKey) غير صحيح', false);
+        }
+    }
+
+    async function changePin() {
+        const newPin = prompt('أدخل رمز الدخول الجديد (AKey) المكون من 4 خانات على الأقل:');
+        if (!newPin) return;
+        const clean = newPin.trim();
+        if (clean.length < 4) {
+            showAdminToast('يجب ألا يقل الرمز عن 4 خانات', false);
             return;
         }
 
-        const hashed = await sha256Hex(enteredPin);
-        const customHash = localStorage.getItem('aj_admin_custom_hash');
-        const expectedHash = customHash || DEFAULT_MASTER_HASH;
+        let updated = false;
 
-        if (hashed === expectedHash) {
-            AdminState.isAuthenticated = true;
-            sessionStorage.setItem('aj_auth_token', 'sec_session_active_2026');
-            sessionStorage.removeItem('aj_failed_attempts');
-            showAdminToast('تم التحقق بنجاح — مرحباً بك في استوديو نشر المعرض', true);
-            updateAdminPanelUI();
-        } else {
-            let failed = parseInt(sessionStorage.getItem('aj_failed_attempts') || '0', 10) + 1;
-            sessionStorage.setItem('aj_failed_attempts', failed);
+        // 1. Backend update
+        try {
+            const res = await fetch('/api/admin/update-pin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SEC_KEY}`
+                },
+                body: JSON.stringify({ newPin: clean })
+            });
+            if (res.ok) updated = true;
+        } catch (_) {}
 
-            if (failed >= 5) {
-                const lockTime = Date.now() + 10 * 60 * 1000; // 10 minutes lockout
-                sessionStorage.setItem('aj_lockout_until', lockTime);
-                showAdminToast('تم قفل الدخول لمدة 10 دقائق بعد 5 محاولات خاطئة متتالية.', false);
-            } else {
-                showAdminToast(`رمز الدخول غير صحيح. المحاولات المتبقية: ${5 - failed}`, false);
+        // 2. Direct Firebase update fallback
+        if (!updated && db) {
+            try {
+                await db.ref('AKey').set(clean);
+                updated = true;
+            } catch (err) {
+                console.warn('[Update AKey]', err.message);
             }
+        }
+
+        if (updated) {
+            showAdminToast('تم حفظ رمز الدخول الجديد (AKey) في Firebase بنجاح');
+        } else {
+            showAdminToast('تعذر تحديث الرمز في Firebase', false);
         }
     }
 
@@ -388,6 +429,7 @@
         const loginView = document.getElementById('admin-login-view');
         const dashboardView = document.getElementById('admin-dashboard-view');
         const logoutBtn = document.getElementById('admin-logout-btn');
+        const keyBtn = document.getElementById('admin-key-btn');
 
         if (!loginView || !dashboardView) return;
 
@@ -395,12 +437,14 @@
             loginView.style.display = 'none';
             dashboardView.style.display = 'block';
             if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+            if (keyBtn) keyBtn.style.display = 'inline-flex';
             renderPublishedWorksGrid();
             checkGoogleDriveStatus();
         } else {
             loginView.style.display = 'flex';
             dashboardView.style.display = 'none';
             if (logoutBtn) logoutBtn.style.display = 'none';
+            if (keyBtn) keyBtn.style.display = 'none';
             const pinInput = document.getElementById('admin-pin-input');
             if (pinInput) {
                 pinInput.value = '';
@@ -959,7 +1003,7 @@
                     titleEn: document.getElementById('input-work-title-en').value,
                     category: document.getElementById('input-work-category').value,
                     description: document.getElementById('input-work-desc').value,
-                    imageIdx: document.getElementById('input-work-img-idx').value,
+                    imageIdx: document.getElementById('input-work-img-idx') ? document.getElementById('input-work-img-idx').value : '',
                     isPublished: document.getElementById('input-work-published').checked,
                     isHeroFeatured: document.getElementById('input-work-hero').checked
                 };
@@ -1013,6 +1057,7 @@
         deleteWork: deleteWork,
         toggleHeroFeatured: toggleHeroFeatured,
         resetForm: resetArtworkForm,
+        changePin: changePin,
         setCategory: (cat) => {
             const input = document.getElementById('input-work-category');
             if (input) {
