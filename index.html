@@ -885,10 +885,22 @@
             currentModalWork = work;
             const workId = String(work.id || work._firebaseKey || source);
 
-            // Record live view in Firebase RTDB
+            // Record live view in Firebase RTDB strictly once per user (Anti-Fake / Anti-Duplicate)
+            const sessionKey = `aj_viewed_${workId}`;
+            let hasAlreadyViewed = false;
+            try {
+                hasAlreadyViewed = !!localStorage.getItem(sessionKey);
+            } catch (_) {}
+
+            if (!hasAlreadyViewed) {
+                work.viewsCount = (work.viewsCount || 0) + 1;
+                // Sync card view counter in the grid
+                const cardViewCounter = document.querySelector(`.card-like-btn[data-work-id="${workId}"]`)?.parentElement?.querySelector('.view-counter');
+                if (cardViewCounter) cardViewCounter.innerText = work.viewsCount;
+            }
+
             if (window.AJGateway && window.AJGateway.recordView) {
                 window.AJGateway.recordView(workId);
-                work.viewsCount = (work.viewsCount || 0) + 1;
             }
 
             // Sync Like state
@@ -902,7 +914,7 @@
 
             const modalViewsEl = document.getElementById('modal-views-count');
             if (modalViewsEl) {
-                modalViewsEl.innerText = work.viewsCount || 1;
+                modalViewsEl.innerText = work.viewsCount || 0;
             }
 
             if (modalTitle) modalTitle.innerText = title;

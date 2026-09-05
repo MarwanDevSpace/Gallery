@@ -70,10 +70,24 @@
         };
     }
 
+    // ── Persistent Anonymous Device Fingerprint for Anti-Fake Views ──
+    function getDeviceId() {
+        try {
+            let id = localStorage.getItem('aj_device_id');
+            if (!id) {
+                id = 'dev_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+                localStorage.setItem('aj_device_id', id);
+            }
+            return id;
+        } catch (_) {
+            return 'dev_anon_' + Date.now();
+        }
+    }
+
     // ── Local Liked State Tracking ──
     function getLikedList() {
         try {
-            const raw = localStorage.getItem('aj_liked_artworks');
+            const raw = localStorage.getItem('aj_liked_posts');
             return raw ? JSON.parse(raw) : [];
         } catch (_) {
             return [];
@@ -95,19 +109,20 @@
             updated = list.filter(item => item !== idStr);
         }
         try {
-            localStorage.setItem('aj_liked_artworks', JSON.stringify(updated));
+            localStorage.setItem('aj_liked_posts', JSON.stringify(updated));
         } catch (_) {}
         return updated;
     }
 
-    // ── Interactive Likes Handler ──
+    // ── Interactive Likes Handler Merged Directly Inside POST ──
     async function likeArtwork(workId, shouldLike) {
         setArtworkLiked(workId, shouldLike);
+        const postId = String(workId).startsWith('POST') ? String(workId) : `POST${workId}`;
 
-        // Try Firebase SDK first
+        // 1. Try Direct Firebase SDK Transaction
         if (_dbInstance) {
             try {
-                const countRef = _dbInstance.ref(`artworks/${workId}/likesCount`);
+                const countRef = _dbInstance.ref(`POSTS/${postId}/likesCount`);
                 const res = await countRef.transaction(current => {
                     const c = (typeof current === 'number') ? current : 0;
                     return shouldLike ? c + 1 : Math.max(0, c - 1);
@@ -116,98 +131,132 @@
                     return res.snapshot.val();
                 }
             } catch (err) {
-                console.warn('[Gateway] RTDB like transaction warning, attempting backend API:', err.message);
+                console.warn('[Gateway] RTDB like transaction warning, attempting REST:', err.message);
             }
         }
 
-        // Fallback to Backend Proxy API
+        // 2. Direct REST Fallback to Firebase Realtime Database
         try {
-            const res = await fetch('/api/artwork/like', {
-                method: 'POST',
+            const getRes = await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/POSTS/${postId}/likesCount.json`);
+            const current = getRes.ok ? (await getRes.json()) : 0;
+            const curVal = typeof current === 'number' ? current : 0;
+            const newVal = shouldLike ? curVal + 1 : Math.max(0, curVal - 1);
+            await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/POSTS/${postId}/likesCount.json`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ artworkId: workId, delta: shouldLike ? 1 : -1 })
+                body: JSON.stringify(newVal)
             });
-            if (res.ok) {
-                const data = await res.json();
-                return data.likesCount;
-            }
+            return newVal;
         } catch (_) {}
 
         return null;
     }
 
-    // ── Interactive Views Tracker ──
+    // ── Interactive Views Tracker Merged in POST (Strict Anti-Duplicate / No Fake Views) ──
     async function recordView(workId) {
-        const sessionKey = `aj_viewed_${workId}`;
-        if (sessionStorage.getItem(sessionKey)) return;
-        sessionStorage.setItem(sessionKey, '1');
+        if (!workId) return;
+        const postId = String(workId).startsWith('POST') ? String(workId) : `POST${workId}`;
+        const sessionKey = `aj_viewed_${postId}`;
 
+        // Verify if client has already viewed this POST locally
+        try {
+            if (localStorage.getItem(sessionKey)) return;
+            localStorage.setItem(sessionKey, '1');
+        } catch (_) {}
+
+        const devId = getDeviceId();
+
+        // 1. Firebase SDK Transaction (Atomically records user and increments viewsCount)
         if (_dbInstance) {
             try {
-                const viewRef = _dbInstance.ref(`artworks/${workId}/viewsCount`);
-                viewRef.transaction(current => {
-                    const c = (typeof current === 'number') ? current : 0;
-                    return c + 1;
+                const postRef = _dbInstance.ref(`POSTS/${postId}`);
+                await postRef.transaction(post => {
+                    if (!post) return post;
+                    if (!post.viewedUsers) post.viewedUsers = {};
+                    if (!post.viewedUsers[devId]) {
+                        post.viewedUsers[devId] = true;
+                        post.viewsCount = (typeof post.viewsCount === 'number' ? post.viewsCount : 0) + 1;
+                    }
+                    return post;
                 });
                 return;
             } catch (_) {}
         }
 
+        // 2. Direct REST Fallback to Firebase Realtime Database
         try {
-            fetch('/api/artwork/view', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ artworkId: workId })
-            });
+            const checkUrl = `https://aj-gallery-2026-default-rtdb.firebaseio.com/POSTS/${postId}.json`;
+            const checkRes = await fetch(checkUrl);
+            if (checkRes.ok) {
+                const postData = await checkRes.json();
+                if (postData && (!postData.viewedUsers || !postData.viewedUsers[devId])) {
+                    const newViews = (Number(postData.viewsCount) || 0) + 1;
+                    await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/POSTS/${postId}/viewsCount.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newViews)
+                    });
+                    await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/POSTS/${postId}/viewedUsers/${devId}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(true)
+                    });
+                }
+            }
         } catch (_) {}
+    }
+
+    // ── Helper: Normalize POSTS into Sequential Array ──
+    function normalizePostsData(val) {
+        if (!val) return [];
+        let list = [];
+        if (Array.isArray(val)) {
+            list = val.filter(Boolean).map((item, idx) => ({
+                ...item,
+                id: item.id || `POST${idx + 1}`,
+                _firebaseKey: item.id || `POST${idx + 1}`
+            }));
+        } else if (typeof val === 'object') {
+            const keys = Object.keys(val);
+            list = keys.map(k => ({
+                ...val[k],
+                id: val[k].id || k,
+                _firebaseKey: k
+            }));
+            // Sort sequentially: POST1, POST2, POST3...
+            list.sort((a, b) => {
+                const numA = parseInt(String(a.id || a._firebaseKey).replace(/\D/g, ''), 10) || 0;
+                const numB = parseInt(String(b.id || b._firebaseKey).replace(/\D/g, ''), 10) || 0;
+                return numA - numB;
+            });
+        }
+        return list;
     }
 
     // ── Live Reactive Data Stream (Dispatches to Public Frontend) ──
     function initPublicSync() {
         // Fast direct fetch for immediate zero-delay loading
-        const directUrl = 'https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks.json';
+        const directUrl = 'https://aj-gallery-2026-default-rtdb.firebaseio.com/POSTS.json';
         fetch(directUrl)
             .then(r => r.json())
             .then(data => {
-                if (data !== undefined) {
-                    let list = [];
-                    if (data) {
-                        if (Array.isArray(data)) {
-                            list = data.filter(item => item !== null);
-                        } else if (typeof data === 'object') {
-                            list = Object.keys(data).map(k => ({ ...data[k], _firebaseKey: k }));
-                        }
-                    }
-                    window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
-                }
+                const list = normalizePostsData(data);
+                window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
             })
             .catch(() => {
-                fetch('/api/artworks')
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data) {
-                            let list = Array.isArray(data) ? data.filter(Boolean) : Object.keys(data).map(k => ({ ...data[k], _firebaseKey: k }));
-                            window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
-                        }
-                    })
-                    .catch(() => {});
+                window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: [] }));
             });
 
-        // Live Realtime WebSocket synchronization
+        // Live Realtime WebSocket synchronization on /POSTS
         if (_dbInstance) {
-            _dbInstance.ref('artworks').on('value', (snap) => {
+            _dbInstance.ref('POSTS').on('value', (snap) => {
                 const val = snap.val();
-                let list = [];
                 if (val) {
-                    if (Array.isArray(val)) {
-                        list = val.filter(item => item !== null);
-                    } else if (typeof val === 'object') {
-                        list = Object.keys(val).map(k => ({ ...val[k], _firebaseKey: k }));
-                    }
+                    const list = normalizePostsData(val);
+                    window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
                 }
-                window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
             }, (err) => {
-                console.warn('[Gateway Sync] Read status:', err.code);
+                console.warn('[Gateway Sync] POSTS read status:', err.code);
             });
         }
     }
@@ -241,6 +290,8 @@
         likeArtwork: likeArtwork,
         recordView: recordView,
         isArtworkLiked: isArtworkLiked,
+        normalizePostsData: normalizePostsData,
+        getDeviceId: getDeviceId,
         resolveDriveUrl: resolveDriveUrl,
         extractDriveId: extractDriveId,
         getDriveFolderInfo: () => ({
