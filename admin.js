@@ -25,7 +25,7 @@
         currentImageUrl: null,
         currentDimensions: null,
         isProcessingImage: false,
-        driveScriptUrl: 'https://script.google.com/macros/s/AKfycbyo5PgofKBVjBI2SMMj82S8lCisAlF54gbLU814oetviWy2DlFUwwup806Kr6FT79Nxuw/exec'
+        driveScriptUrl: 'https://script.google.com/macros/s/AKfycbx51dtS3L6nrcMwMo4gyovM-eWjL-tmCUHt5G-6_7ERcSN8DGFCOiE8eFh1ToZDfPVwfw/exec'
     };
 
     // Check existing session
