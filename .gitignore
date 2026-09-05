@@ -1,0 +1,31 @@
+# AJ Gallery Security & Environment Rules
+# Prevent sensitive server, credentials, and rule configurations from leaking to public Git repository
+
+# Backend server and proxy files
+server.js
+
+# Firebase local configurations & security rules
+.firebaserc
+firebase.json
+database.rules.json
+
+# API keys, service accounts & credentials
+*.env
+*.env.*
+serviceAccountKey.json
+gdrive_credentials.json
+credentials.json
+*.pem
+*.key
+
+# Dependencies & temporary runtime files
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Local uploads folder (served dynamically via Google Drive & Backend)
+Gallery_Images/

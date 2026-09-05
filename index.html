@@ -3,257 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>مكتبة عبد الجبار | واجهات وتصاميم فنية</title>
-    <meta name="description" content="البورتفوليو الاحترافي للمصمم عبد الجبار — تصاميم بصرية محمية بتقنية img2Preview.">
+    <title>معرض عبد الجبار | Abdul Jabbar Digital Visual Gallery</title>
+    <meta name="description" content="المعرض الفني والتشكيلي للمصمم عبد الجبار — تصاميم بصرية وهوية رقمية محمية بتقنية التشفير المتقدمة img2Preview AES-256-GCM.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;600;700;800;900&family=Cairo:wght@300;400;600;700&family=Lalezar&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="unselectable">
 
     <div id="toast" class="toast-notification"></div>
-    <div class="grid-pattern-bg"></div>
-    <div class="blob-bg">
-        <div class="blob blob-primary"></div>
-        <div class="blob blob-secondary"></div>
-        <div class="blob blob-accent"></div>
-    </div>
 
-    <!-- ══ NAVBAR ══ -->
-    <nav class="navbar">
-        <div class="nav-progress-bar" id="nav-progress"></div>
-        <div class="nav-container">
-            <a class="brand" href="#" draggable="false">
-                <img src="header.png" alt="Abdul Jabbar Gallery" class="brand-logo">
-            </a>
-            <div class="nav-center">
-                <span class="nav-tagline">Portfolio · Visual Design · 2026</span>
+    <!-- ══ TOP DIGITAL STATUS BAR (NO PHYSICAL HOURS) ══ -->
+    <aside class="digital-top-bar" aria-label="Gallery Status">
+        <div class="top-bar-container">
+            <div class="top-bar-left">
+                <span><span class="live-digital-dot"></span> المعرض متاح رقمياً على مدار الساعة · 24/7 Digital Showcase</span>
             </div>
-            <div class="nav-controls">
-                <div class="live-dot" title="متاح للعمل"></div>
-                <button id="theme-toggle" class="control-btn hover-pop" aria-label="تبديل الثيم">
-                    <i class="fa-solid fa-moon"></i>
+            <div class="top-bar-right">
+                <button class="top-bar-control-btn" id="open-admin-btn" title="لوحة تحكم المعرض (Ctrl+Shift+A)">
+                    <i class="fa-solid fa-sliders"></i> <span>لوحة التحكم</span>
                 </button>
+                <span class="top-bar-sep">|</span>
+                <span><i class="fa-solid fa-briefcase" style="color:var(--accent-gold);margin-left:0.35rem"></i> متاح للمشاريع والعمل الحر</span>
+                <span class="top-bar-sep">|</span>
+                <button class="top-bar-theme-btn" id="theme-toggle" aria-label="تبديل الثيم">
+                    <i class="fa-solid fa-circle-half-stroke"></i> <span id="theme-label">ثيم المعرض</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ══ GALLERY NAVBAR ══ -->
+    <nav class="gallery-nav" id="main-nav">
+        <div class="container nav-container">
+            <div class="nav-links nav-links-right">
+                <a href="#hero" class="nav-link active">الرئيسية</a>
+                <a href="#exhibitions" class="nav-link">المعرض</a>
+                <a href="#about" class="nav-link">عن الاستوديو</a>
+                <a href="#services" class="nav-link">الخدمات</a>
+            </div>
+
+            <!-- Pure Gallery Brand -->
+            <a class="gallery-brand" href="#" draggable="false">
+                <span class="gallery-brand-name">ABDUL JABBAR</span>
+                <span class="gallery-brand-tag">DIGITAL VISUAL GALLERY</span>
+            </a>
+
+            <div class="nav-links nav-links-left">
+                <a href="#gallery-grid" class="nav-link">الأعمال</a>
+                <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="nav-link">انستقرام</a>
+                <a href="https://t.me/abdul_7jabbar" target="_blank" class="nav-link">تليجرام</a>
+                <a href="https://t.me/abdul_7jabbar" target="_blank" class="nav-pill-btn">طلب مشروع</a>
             </div>
         </div>
     </nav>
 
-    <!-- ══ HERO ══ -->
-    <header class="hero-section">
-        <div class="container">
-            <div class="hero-unified-box">
+    <!-- ══ HERO SECTION & EXHIBITION SPOTLIGHT SHOWCASE ══ -->
+    <header class="hero-section" id="hero">
+        <div class="container hero-container">
 
-                <!-- Text -->
-                <article class="hero-text">
-                    <div class="hero-eyebrow">
-                        <span class="eyebrow-dot"></span>
-                        Graphic Designer · Creative Studio
-                    </div>
-                    <h1 class="hero-title anim-up">معرض <span class="text-gradient">أعمالي</span></h1>
-                    <p class="hero-desc anim-up delay-1">
-                        معرضي الخاص للـ <span dir="ltr">Graphic Design</span> لعرض التصاميم والأعمال الصورية الخاصة. كل قطعة تحكي قصة بصرية فريدة.
-                    </p>
-
-                    <div class="tools-row anim-up delay-2">
-                        <span class="tools-label">الأدوات المستخدمة</span>
-                        <div class="tools-badges">
-                            <span class="badge-tool">
-                                <svg class="tool-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#7D2AE8"/><circle cx="12" cy="12" r="5.5" fill="#fff"/><path d="M12 7.5c-2.5 0-4.5 2-4.5 4.5s2 4.5 4.5 4.5 4.5-2 4.5-4.5-2-4.5-4.5-4.5zm0 7c-1.4 0-2.5-1.1-2.5-2.5s1.1-2.5 2.5-2.5 2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z" fill="#7D2AE8"/></svg>
-                                Canva
-                            </span>
-                            <span class="badge-tool">
-                                <svg class="tool-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF6CB5"/><stop offset="100%" stop-color="#FF3CAC"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5" fill="url(#hg)"/><path d="M8 16V8h2l2 4 2-4h2v8h-2v-5l-2 3.5-2-3.5V16H8z" fill="#fff"/></svg>
-                                Hypic
-                            </span>
-                            <span class="badge-tool">
-                                <svg class="tool-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M2 12.13C2 8.59 2 6.81 2.69 5.46A6.9 6.9 0 015.46 2.69C6.81 2 8.59 2 12.13 2h7.74c3.55 0 5.32 0 6.67.69a6.9 6.9 0 012.77 2.77C30 6.81 30 8.59 30 12.13v7.74c0 3.55 0 5.32-.69 6.67a6.9 6.9 0 01-2.77 2.77c-1.35.69-3.13.69-6.67.69h-7.74c-3.55 0-5.32 0-6.67-.69a6.9 6.9 0 01-2.77-2.77C2 25.19 2 23.41 2 19.87V12.13z" fill="#001E36"/><path d="M16.7 22.62H9.3c-.12 0-.19-.07-.19-.21V10.17c-.01-.1.08-.19.17-.17h2.29c.08-.01.14.06.13.14v10.06h5.39c.11 0 .16.06.13.17l-.34 2.08c0 .1-.09.17-.19.17z" fill="#31A8FF"/><path d="M18.59 13.03h2.05c.11 0 .21.08.24.19.15.34.17.76.17 1.12.35-.42.77-.77 1.25-1.03a3.1 3.1 0 011.67-.43c.1-.01.18.09.17.17v2.33c0 .09-.06.13-.19.13-.87-.06-2.22.15-2.85.85v6.06c0 .12-.05.17-.15.17h-2.2c-.11.02-.2-.08-.19-.19v-6.58c0-.88.02-1.79-.11-2.66-.02-.08.05-.16.13-.13z" fill="#31A8FF"/></svg>
-                                Lightroom
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="hero-sep anim-up delay-3"><span>تواصل معي</span></div>
-
-                    <div class="hero-actions anim-up delay-3">
-                        <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" draggable="false" class="btn btn-instagram hover-pop">
-                            <i class="fa-brands fa-instagram"></i> زيارة انستقرام
-                        </a>
-                        <a href="https://t.me/abdul_7jabbar" target="_blank" draggable="false" class="btn btn-telegram hover-pop">
-                            <i class="fa-brands fa-telegram"></i> رسالة تليجرام
-                        </a>
-                    </div>
-                </article>
-
-                <!-- Visual -->
-                <aside class="hero-visual">
-                    <div class="orbit-ring"></div>
-                    <div class="orbit-ring-2"></div>
-                    <div class="cards-stack" id="hero-carousel">
-                        <div class="stack-card pos-1" data-hero-idx="1"><canvas class="hero-canvas"></canvas></div>
-                        <div class="stack-card pos-2" data-hero-idx="7"><canvas class="hero-canvas"></canvas></div>
-                        <div class="stack-card pos-3" data-hero-idx="0"><canvas class="hero-canvas"></canvas></div>
-                    </div>
-                    <div class="carousel-badge">
-                        <i class="fa-solid fa-images"></i>
-                        <span>أعمالي الأخيرة — <strong>8</strong> تصميم</span>
-                    </div>
-                </aside>
-
+            <!-- Hero Header Text -->
+            <div class="hero-header-text">
+                <div class="hero-eyebrow">
+                    <i class="fa-solid fa-gem"></i> بورتفوليو رقمي حصري · 2026
+                </div>
+                <h1 class="hero-title">معرض عبد الجبار</h1>
+                <span class="hero-subtitle">Visual Arts & Digital Design Gallery</span>
+                <p class="hero-desc">
+                    معرضي الخاص لعرض نخبة أعمال التصميم الغرافيكي، الهويات الفنية، والتكوينات البصرية. كل قطعة محمية كلياً بنظام التشفير التلقائي img2Preview AES-256-GCM لمنع الاستنساخ الرقمي.
+                </p>
+                <div class="hero-actions">
+                    <a href="#exhibitions" class="ozeum-pill-btn primary">
+                        استكشف المعرض · EXPLORE WORKS
+                    </a>
+                    <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="ozeum-pill-btn secondary">
+                        <i class="fa-brands fa-instagram"></i> انستقرام
+                    </a>
+                </div>
             </div>
+
+            <!-- Restored Grand Museum Showcase with Smooth Fading Animation -->
+            <div class="hero-showcase-wrapper">
+                <div class="exhibition-spotlight-scene">
+                    <div class="museum-artwork-frame" id="hero-showcase-frame" role="button" tabindex="0" title="انقر لمعاينة العمل بدقة فائقة">
+                        <div class="fade-canvas-container">
+                            <canvas id="hero-fade-canvas-1" class="showcase-fade-canvas active" data-hero-idx="0"></canvas>
+                            <canvas id="hero-fade-canvas-2" class="showcase-fade-canvas" data-hero-idx="1"></canvas>
+                        </div>
+                        <div class="artwork-glare-overlay"></div>
+                    </div>
+                    <div class="museum-visitor-figure" aria-hidden="true"></div>
+                </div>
+
+                <!-- Dynamic Control Bar Below Frame -->
+                <div class="showcase-dynamic-panel">
+                    <div class="showcase-meta-info">
+                        <span class="showcase-category" id="showcase-category">UI Architecture</span>
+                        <h3 class="showcase-title" id="showcase-title">تصميم واجهة متطورة</h3>
+                    </div>
+
+                    <div class="showcase-dots" id="showcase-dots">
+                        <!-- Dots populated by script -->
+                    </div>
+
+                    <div class="showcase-controls">
+                        <button class="showcase-nav-btn" id="showcase-prev-btn" aria-label="العمل السابق">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <span class="showcase-counter" id="showcase-counter"><strong>01</strong> / 08</span>
+                        <button class="showcase-nav-btn" id="showcase-next-btn" aria-label="العمل التالي">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button class="showcase-inspect-pill" id="showcase-inspect-btn">
+                            <i class="fa-solid fa-expand"></i> معاينة بدقة فائقة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </header>
 
-    <!-- ══ MARQUEE STRIP ══ -->
-    <div class="marquee-section">
-        <div class="marquee-track">
-            <!-- Set 1 -->
-            <span class="marquee-item"><span class="marquee-dot"></span>UI Design</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>هوية بصرية</span>
-            <span class="marquee-item ac"><span class="marquee-dot"></span>Branding</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Graphic Design</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>تصميم إبداعي</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Motion Graphics</span>
-            <span class="marquee-item ac"><span class="marquee-dot"></span>Visual Art</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Social Media</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>Poster Design</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Color Theory</span>
-            <span class="marquee-item ac"><span class="marquee-dot"></span>Typography</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>أعمال فنية</span>
-            <!-- Set 2 (duplicate for seamless loop) -->
-            <span class="marquee-item"><span class="marquee-dot"></span>UI Design</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>هوية بصرية</span>
-            <span class="marquee-item ac"><span class="marquee-dot"></span>Branding</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Graphic Design</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>تصميم إبداعي</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Motion Graphics</span>
-            <span class="marquee-item ac"><span class="marquee-dot"></span>Visual Art</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Social Media</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>Poster Design</span>
-            <span class="marquee-item"><span class="marquee-dot"></span>Color Theory</span>
-            <span class="marquee-item ac"><span class="marquee-dot"></span>Typography</span>
-            <span class="marquee-item hi"><span class="marquee-dot"></span>أعمال فنية</span>
-        </div>
-    </div>
-
-    <!-- ══ GALLERY & FOOTER WRAPPER ══ -->
-    <div class="gallery-wrapper">
-        <main class="gallery-section container">
-
-            <div class="section-header">
-                <div class="section-header-left">
-                    <span class="section-label">
-                        <span class="section-label-line"></span>
-                        Selected Works
-                    </span>
-                    <h2 class="section-title">
-                        المعرض
-                        <span class="section-count">08</span>
-                        <i class="fa-solid fa-images" style="color:var(--primary);font-size:.55em;vertical-align:middle;margin-right:.2em"></i>
-                    </h2>
-                </div>
-                <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="view-all-btn">
-                    عرض الكل <i class="fa-solid fa-arrow-left" style="font-size:.8em"></i>
+    <!-- ══ SECTION 1: WELCOME & STUDIO INTRO ══ -->
+    <section class="museum-intro-section" id="about">
+        <div class="container intro-grid">
+            <div class="intro-text-col">
+                <h2 class="ozeum-section-heading">
+                    Welcome To Abdul Jabbar<br>
+                    <span class="heading-serif">Visual Art & Design Studio</span>
+                    <span class="heading-sub-ar">استوديو ومعرض عبد الجبار للأعمال الفنية</span>
+                </h2>
+                <p class="intro-lead-p">
+                    منصة إبداعية رقمية تقدم نخبة حلول التصميم البصري المعاصر، تطوير الهويات التجارية، وهندسة الواجهات التفاعلية بأعلى المعايير الجمالية والفنية.
+                </p>
+                <p class="intro-sub-p">
+                    يعتمد المعرض أسلوب العرض المتحفي الراقي بدقة متناهية، مع تطبيق نظام حماية وتشفير متكامل img2Preview AES-GCM لحماية الملكية الفكرية دون المساس بنقاء وجودة الصورة المعروضة.
+                </p>
+                <a href="#exhibitions" class="ozeum-text-link">
+                    استكشف كافة الأعمال <span class="arrow">───→</span>
                 </a>
             </div>
 
-            <div class="masonry-layout" id="gallery-grid">
-                <figure class="gallery-item" data-idx="0">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>تصميم واجهة متطورة</h4>
-                        <span>واجهة مستخدم (UI)</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="1">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>تطبيق محمول</h4>
-                        <span>هوية رقمية</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="2">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>نماذج فنية</h4>
-                        <span>إيحاء هندسي</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="3">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>علامة تجارية</h4>
-                        <span>تطوير العلامة</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="4">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>بوستر إبداعي</h4>
-                        <span>فن تجريدي</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="5">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>تحليل وواجهات</h4>
-                        <span>تجربة متكاملة (UX)</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="6">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>تناسق لوني</h4>
-                        <span>دراسات بصرية</span>
-                    </figcaption>
-                </figure>
-                <figure class="gallery-item" data-idx="7">
-                    <canvas class="pixel-canvas"></canvas>
-                    <figcaption class="item-overlay">
-                        <div class="overlay-zoom-icon"><i class="fa-solid fa-expand"></i></div>
-                        <h4>عناصر غرافيكية</h4>
-                        <span>مكونات تصميم</span>
-                    </figcaption>
-                </figure>
+            <div class="intro-sketch-col">
+                <div class="classic-sketch-frame">
+                    <canvas class="hero-canvas sketch-canvas" id="intro-sketch-canvas" data-hero-idx="2"></canvas>
+                    <div class="sketch-caption">FIG. 02 — STUDIES IN VISUAL GEOMETRY & HARMONY</div>
+                </div>
             </div>
+        </div>
+    </section>
 
-        </main>
+    <!-- ══ SECTION 2: SELECTED WORKS & SOLID BACKGROUND GALLERY ══ -->
+    <section class="museum-exhibitions-section" id="exhibitions">
+        <div class="container">
 
-        <!-- ══ FOOTER ══ -->
-        <footer class="site-footer">
-            <div class="container">
-                <div class="footer-inner">
-                    <div class="footer-brand">
-                        <img src="header.png" alt="AJ Logo" class="footer-logo">
+            <!-- Editorial Header Row with Divider -->
+            <div class="ozeum-header-row">
+                <h2 class="ozeum-main-title">
+                    Selected Works <span class="ar-title">· المعرض والأعمال المختارة</span>
+                </h2>
+                <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="ozeum-all-link">
+                    VIEW ALL WORKS <span class="arrow">───→</span>
+                </a>
+            </div>
+            <div class="ozeum-header-divider"></div>
+
+            <!-- Featured Masterwork Banner Card -->
+            <div class="featured-exhibition-card">
+                <div class="featured-canvas-wrapper">
+                    <canvas class="hero-canvas" id="featured-salon-canvas" data-hero-idx="1"></canvas>
+                    <div class="exhibition-tag">FEATURED MASTERWORK · 2026</div>
+                </div>
+                <div class="featured-exhibition-meta">
+                    <div class="meta-col-main">
+                        <h3>Digital Mobile Architecture & Brand Identity</h3>
+                        <span class="meta-date">Creative Direction · 2026 Series</span>
                     </div>
-                    <p class="footer-copy">
-                        &copy; 2026 جميع الحقوق محفوظة لمعرض عبد الجبار — المحتوى محمي بحقوق الملكية الفكرية
-                    </p>
-                    <div class="footer-socials">
-                        <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="social-icon ig" aria-label="Instagram">
-                            <i class="fa-brands fa-instagram"></i>
-                        </a>
-                        <a href="https://t.me/abdul_7jabbar" target="_blank" class="social-icon tg" aria-label="Telegram">
-                            <i class="fa-brands fa-telegram"></i>
-                        </a>
+                    <div class="meta-col-desc">
+                        <p>تطوير متكامل لهوية رقمية ونظام واجهات حديث يجمع بين البساطة الوظيفية والتناسق اللوني، مع إخراج فني عالي الدقة محمي بنظام التشفير التلقائي.</p>
+                    </div>
+                    <div class="meta-col-cta">
+                        <button class="ozeum-mini-pill-btn" onclick="openWorkModal(1, 'Digital Mobile Architecture')">MORE INFO</button>
                     </div>
                 </div>
             </div>
-        </footer>
-    </div>
 
-    <!-- ══ MODAL ══ -->
-    <div id="ig-modal" class="modal-backdrop">
+            <!-- Solid Background Museum Gallery Grid (Perfect Viewport Sizing) -->
+            <div class="gallery-exhibition-grid" id="gallery-grid">
+
+                <article class="gallery-item" data-idx="0" tabindex="0" role="button" aria-label="عرض العمل 1">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">UI Architecture</span>
+                        <h4>تصميم واجهة متطورة</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #01</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="1" tabindex="0" role="button" aria-label="عرض العمل 2">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">Mobile Identity</span>
+                        <h4>تطبيق محمول وهوية رقمية</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #02</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="2" tabindex="0" role="button" aria-label="عرض العمل 3">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">Geometric Art</span>
+                        <h4>نماذج وتكوينات فنية</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #03</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="3" tabindex="0" role="button" aria-label="عرض العمل 4">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">Brand System</span>
+                        <h4>علامة تجارية وبصرية</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #04</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="4" tabindex="0" role="button" aria-label="عرض العمل 5">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">Poster Design</span>
+                        <h4>بوستر إبداعي وتجريدي</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #05</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="5" tabindex="0" role="button" aria-label="عرض العمل 6">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">UX Research</span>
+                        <h4>دراسة تجربة متكاملة</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #06</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="6" tabindex="0" role="button" aria-label="عرض العمل 7">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">Color Harmony</span>
+                        <h4>تناسق لوني ودراسات بصرية</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #07</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="gallery-item" data-idx="7" tabindex="0" role="button" aria-label="عرض العمل 8">
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="caption-category">Graphic Motion</span>
+                        <h4>عناصر وتراكيب غرافيكية</h4>
+                        <div class="caption-footer">
+                            <span class="caption-id">WORK #08</span>
+                            <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ══ SECTION 3: DIGITAL STUDIO & SERVICES (NO PHYSICAL OPENING HOURS) ══ -->
+    <section class="studio-services-section" id="services">
+        <div class="container services-grid">
+
+            <!-- Curatorial Gallery Wall Frames -->
+            <div class="curatorial-gallery-wall">
+                <div class="wall-frame">
+                    <canvas class="hero-canvas" data-hero-idx="3"></canvas>
+                </div>
+                <div class="wall-frame">
+                    <canvas class="hero-canvas" data-hero-idx="4"></canvas>
+                </div>
+                <div class="wall-frame">
+                    <canvas class="hero-canvas" data-hero-idx="5"></canvas>
+                </div>
+            </div>
+
+            <!-- Studio Services Details -->
+            <div class="services-info-col">
+                <div>
+                    <h2 class="services-heading">خدمات الاستوديو والتواصل</h2>
+                    <span class="services-subheading">Studio Services & Collaboration</span>
+                </div>
+
+                <div class="info-block">
+                    <h4>مجالات العمل الإبداعي</h4>
+                    <div class="service-item-row">
+                        <span>Brand Identity & Systems (الهوية البصرية)</span>
+                        <span class="dots"></span>
+                        <span class="service-status-pill">متاح</span>
+                    </div>
+                    <div class="service-item-row">
+                        <span>UI/UX Product Architecture (تصميم الواجهات)</span>
+                        <span class="dots"></span>
+                        <span class="service-status-pill">متاح</span>
+                    </div>
+                    <div class="service-item-row">
+                        <span>Poster & Visual Artwork (البوسترات الفنية)</span>
+                        <span class="dots"></span>
+                        <span class="service-status-pill">متاح</span>
+                    </div>
+                </div>
+
+                <div class="info-block">
+                    <h4>طبيعة العمل والتعاون</h4>
+                    <div class="service-item-row">
+                        <span>طبيعة المعرض</span>
+                        <span class="dots"></span>
+                        <span>معرض رقمي دائم ومتاح 24/7</span>
+                    </div>
+                    <div class="service-item-row">
+                        <span>نظام العمل</span>
+                        <span class="dots"></span>
+                        <span>عمل حر وتعاقدات رقمية عن بُعد</span>
+                    </div>
+                </div>
+
+                <div>
+                    <a href="https://t.me/abdul_7jabbar" target="_blank" class="ozeum-pill-btn primary">
+                        <i class="fa-brands fa-telegram"></i> بدء محادثة لطلب عمل
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ══ SITE FOOTER ══ -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <span class="footer-brand-name">ABDUL JABBAR · معرض عبد الجبار</span>
+            </div>
+            <p class="footer-copy">
+                &copy; 2026 جميع الحقوق محفوظة لمعرض عبد الجبار — المحتوى محمي بنظام تشفير img2Preview AES-256-GCM.
+            </p>
+            <div class="footer-socials">
+                <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="footer-social-btn" aria-label="Instagram">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="https://t.me/abdul_7jabbar" target="_blank" class="footer-social-btn" aria-label="Telegram">
+                    <i class="fa-brands fa-telegram"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ══ HIGH-RESOLUTION ENCRYPTED INSPECTION MODAL ══ -->
+    <div id="ig-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="ig-modal-container">
-            <button class="modal-close" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+            <button class="modal-close" aria-label="إغلاق المعاينة"><i class="fa-solid fa-xmark"></i></button>
             <div class="ig-modal-image-col" id="modal-image-col">
                 <canvas id="modal-canvas" class="modal-pixel-canvas"></canvas>
             </div>
@@ -261,26 +407,27 @@
                 <header class="ig-sidebar-header">
                     <div class="ig-avatar">AJ</div>
                     <div class="ig-user-info">
-                        <strong>عبد الجبار <i class="fa-solid fa-circle-check verify"></i></strong>
-                        <span dir="ltr">@abdul_7jabbar</span>
+                        <strong>عبد الجبار <i class="fa-solid fa-circle-check" style="color:#d2b079"></i></strong>
+                        <span dir="ltr">@abdul_7jabbar · Designer</span>
                     </div>
                 </header>
                 <div class="ig-sidebar-details">
-                    <h3 id="modal-title" class="ig-title">عنوان الصورة</h3>
-                    <p class="ig-subtitle">تم إخراج هذا العمل بدقة عالية عبر تقنية img2Preview — لا توجد صورة قابلة للتنزيل.</p>
+                    <h3 id="modal-title" class="ig-title">عنوان العمل</h3>
+                    <p class="ig-subtitle" id="modal-description">تم فك تشفير هذا العمل في الذاكرة العشوائية بدقة فائقة عبر محرك img2Preview AES-GCM. لا توجد روابط وسائط قابلة للسرقة.</p>
                     <div class="ig-metadata">
-                        <span class="meta-item"><i class="fa-solid fa-expand" style="color:var(--primary)"></i> الدقة الأصلية: <span id="modal-resolution" dir="ltr">--</span></span>
-                        <span class="meta-item secure"><i class="fa-solid fa-shield-halved"></i> محمية بتقنية img2Preview</span>
+                        <span class="meta-item"><i class="fa-solid fa-expand" style="color:var(--accent-gold)"></i> الأبعاد: <span id="modal-resolution" dir="ltr">--</span></span>
+                        <span class="meta-item"><i class="fa-regular fa-eye" style="color:var(--accent-gold)"></i> المشاهدات: <span id="modal-views-count">--</span></span>
+                        <span class="meta-item secure"><i class="fa-solid fa-shield-halved"></i> تشفير AES-256-GCM نشط</span>
                     </div>
                 </div>
                 <footer class="ig-sidebar-action-area">
                     <div class="coffee-action-row">
-                        <button class="action-btn coffee-btn hover-pop" title="أرسل قهوة للمصمم" aria-label="إرسال قهوة">
-                            <i class="fa-solid fa-mug-hot"></i>
+                        <button class="coffee-btn" id="modal-like-btn" title="أرسل إعجاب أو قهوة للمصمم" aria-label="إرسال إعجاب">
+                            <i class="fa-solid fa-heart"></i>
                         </button>
                         <div class="coffee-text-desc">
-                            <span class="coffee-count">تفاعل كدعم وقدم قهوة!</span>
-                            <span class="coffee-hint">تم إرسال <strong id="modal-likes-count">85</strong> فنجان ☕</span>
+                            <span class="coffee-count">أعجبك هذا التكوين الفني؟</span>
+                            <span class="coffee-hint"><strong id="modal-likes-count">0</strong> إعجاب وتفاعل فني ❤️</span>
                         </div>
                     </div>
                 </footer>
@@ -288,124 +435,461 @@
         </div>
     </div>
 
+    <!-- ══ CRYPTOGRAPHIC BACKEND GATEWAY (ZERO-LEAK RUNTIME SYNC) ══ -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="gateway.js"></script>
+
+    <!-- ══ ENCRYPTED CANVAS ENGINE & DYNAMIC SMOOTH-FADING CONTROLLER ══ -->
     <script src="img2preview.js"></script>
     <script>
     (function () {
         'use strict';
 
-        // ── Scroll progress bar ──
-        window.addEventListener('scroll', () => {
-            const el = document.getElementById('nav-progress');
-            if (!el) return;
-            const doc = document.documentElement;
-            const pct = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
-            el.style.width = Math.min(pct, 100) + '%';
-        }, { passive: true });
-
-        // ── Theme ──
+        // ── Theme Switcher ──
         const themeBtn = document.getElementById('theme-toggle');
+        const themeLabel = document.getElementById('theme-label');
         let isLight = localStorage.getItem('theme') === 'light';
-        if (isLight) document.documentElement.setAttribute('data-theme', 'light');
-        let dark = !isLight;
-        themeBtn.innerHTML = dark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-
-        themeBtn.addEventListener('click', () => {
-            dark = !dark;
-            if (!dark) {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'dark');
-            }
-            themeBtn.innerHTML = dark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-        });
-
-        // ── Security ──
-        const showToast = (msg) => {
-            const t = document.getElementById('toast');
-            t.innerHTML = `<i class="fa-solid fa-lock" style="color:#e11d48"></i> ${msg}`;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        };
-        document.addEventListener('contextmenu', e => { e.preventDefault(); showToast('المحتوى محمي لأغراض حقوق النشر Copyright©'); });
-        document.addEventListener('dragstart', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ((e.ctrlKey || e.metaKey) && ['s','p','c','u'].includes(e.key.toLowerCase())) {
-                e.preventDefault(); showToast('المحتوى محمي لأغراض حقوق النشر Copyright©');
-            }
-        });
-
-        // ── Carousel ──
-        const heroCards = Array.from(document.querySelectorAll('.stack-card'));
-        const numGalleryItems = 8;
-        const POSITIONS = ['pos-1','pos-2','pos-3'];
-        let classPositions = [...POSITIONS];
-        let currentCenterImgIdx = 0;
-        let isAnimating = false;
-
-        function paintCard(card, idx) {
-            const canvas = card.querySelector('canvas');
-            const w = card.offsetWidth || 260;
-            const h = card.offsetHeight || 380;
-            return Img2Preview.paint(canvas, idx, { w, h }).catch(() => {});
+        if (isLight) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            if (themeLabel) themeLabel.innerText = 'الوضع الليلي';
         }
-        heroCards.forEach(card => { const idx = parseInt(card.dataset.heroIdx); paintCard(card, idx); });
 
-        function rotateCarousel(dir) {
-            if (isAnimating) return;
-            isAnimating = true;
-            setTimeout(() => { isAnimating = false; }, 750);
-            if (dir === 'next') {
-                classPositions.unshift(classPositions.pop());
-                currentCenterImgIdx = (currentCenterImgIdx + 1) % numGalleryItems;
-            } else {
-                classPositions.push(classPositions.shift());
-                currentCenterImgIdx = (currentCenterImgIdx - 1 + numGalleryItems) % numGalleryItems;
-            }
-            heroCards.forEach((card, i) => {
-                POSITIONS.forEach(p => card.classList.remove(p));
-                card.classList.add(classPositions[i]);
-                const isGoingToBack = (dir === 'next' && classPositions[i] === 'pos-1') ||
-                                      (dir === 'prev' && classPositions[i] === 'pos-2');
-                if (isGoingToBack) {
-                    const nextImg = dir === 'next'
-                        ? (currentCenterImgIdx + 1) % numGalleryItems
-                        : (currentCenterImgIdx - 1 + numGalleryItems) % numGalleryItems;
-                    setTimeout(() => { card.dataset.heroIdx = nextImg; paintCard(card, nextImg); }, 350);
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'light') {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'dark');
+                    if (themeLabel) themeLabel.innerText = 'الوضع النهاري';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    if (themeLabel) themeLabel.innerText = 'الوضع الليلي';
                 }
             });
         }
 
-        let heroAuto = setInterval(() => { if (!document.hidden) rotateCarousel('next'); }, 4000);
-
-        const heroStack = document.getElementById('hero-carousel');
-        let startX = 0, isDragging = false;
-        heroStack.addEventListener('pointerdown', e => { isDragging = true; startX = e.clientX; heroStack.style.cursor = 'grabbing'; });
-        const handleDragEnd = e => {
-            if (!isDragging) return;
-            isDragging = false; heroStack.style.cursor = 'grab';
-            let diffX = e.clientX - startX;
-            if (Math.abs(diffX) > 40) {
-                clearInterval(heroAuto);
-                diffX > 0 ? rotateCarousel('prev') : rotateCarousel('next');
-                heroAuto = setInterval(() => { if (!document.hidden) rotateCarousel('next'); }, 4000);
-            }
+        // ── Copyright Protection Toast ──
+        const showToast = (msg) => {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.innerHTML = `<i class="fa-solid fa-shield-halved" style="color:var(--accent-gold)"></i> ${msg}`;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         };
-        window.addEventListener('pointerup', handleDragEnd);
-        window.addEventListener('pointercancel', () => { isDragging = false; heroStack.style.cursor = 'grab'; });
 
-        // ── Gallery render ──
-        const items = document.querySelectorAll('.gallery-item');
-        items.forEach((item, i) => {
-            setTimeout(() => {
-                const idx = parseInt(item.dataset.idx);
-                const cv = item.querySelector('.pixel-canvas');
-                Img2Preview.paint(cv, idx).catch(() => {});
-            }, i * 100);
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            showToast('المحتوى محمي بنظام التشفير وحقوق الملكية الفكرية Copyright©');
+        });
+        document.addEventListener('dragstart', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'c', 'u'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                showToast('المحتوى محمي بنظام التشفير وحقوق الملكية الفكرية Copyright©');
+            }
         });
 
-        // ── Modal ──
+        // ── Gallery Dataset (Live Synchronized with Firebase RTDB) ──
+        let galleryData = [
+            { id: 0, title: 'تصميم واجهة متطورة', category: 'UI Architecture' },
+            { id: 1, title: 'تطبيق محمول وهوية رقمية', category: 'Mobile Identity' },
+            { id: 2, title: 'نماذج وتكوينات فنية', category: 'Geometric Art' },
+            { id: 3, title: 'علامة تجارية وبصرية', category: 'Brand System' },
+            { id: 4, title: 'بوستر إبداعي وتجريدي', category: 'Poster Design' },
+            { id: 5, title: 'دراسة تجربة متكاملة', category: 'UX Research' },
+            { id: 6, title: 'تناسق لوني ودراسات بصرية', category: 'Color Harmony' },
+            { id: 7, title: 'عناصر وتراكيب غرافيكية', category: 'Graphic Motion' }
+        ];
+
+        // ── Canvas Paint Helper (Supports Natural Aspect Ratio & Auto Height) ──
+        function paintCanvas(canvas, source, hd = false, autoHeight = true) {
+            if (!canvas) return Promise.resolve();
+            const parent = canvas.parentElement;
+            const w = (parent && parent.clientWidth > 50) ? parent.clientWidth : (canvas.clientWidth || 420);
+            const opts = { w, hd, autoHeight, watermark: true };
+            if (!autoHeight && parent && parent.clientHeight > 50) {
+                opts.h = parent.clientHeight;
+            }
+            return Img2Preview.paint(canvas, source, opts).catch(() => {});
+        }
+
+        // ── Dynamic Masonry Gallery Grid Renderer ──
+        function renderDynamicGalleryGrid() {
+            const grid = document.getElementById('gallery-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            galleryData.forEach((work, i) => {
+                const art = document.createElement('article');
+                art.className = 'gallery-item';
+                art.dataset.workIndex = i;
+                art.dataset.idx = work.id;
+                art.tabIndex = 0;
+                art.setAttribute('role', 'button');
+                art.setAttribute('aria-label', `عرض ${work.title}`);
+
+                const workId = String(work.id || (work._firebaseKey !== undefined ? work._firebaseKey : i));
+                const isLiked = window.AJGateway && window.AJGateway.isArtworkLiked ? window.AJGateway.isArtworkLiked(workId) : false;
+                const ratioBadge = work.aspectRatio ? `<span class="caption-id" style="color:var(--accent-gold);font-weight:700">نسبة ${work.aspectRatio}</span>` : `<span class="caption-id">WORK #${String(i + 1).padStart(2, '0')}</span>`;
+
+                art.innerHTML = `
+                    <div class="item-mat-frame">
+                        <canvas class="pixel-canvas"></canvas>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span class="caption-category">${work.category}</span>
+                            ${work.driveFolder ? `<span class="drive-pill-tag" title="مزامنة سحابية"><i class="fa-brands fa-google-drive"></i> Gallery_Images</span>` : ''}
+                        </div>
+                        <h4>${work.title}</h4>
+                        <div class="card-action-bar">
+                            <div class="card-metrics-group">
+                                <button type="button" class="card-like-btn ${isLiked ? 'liked' : ''}" data-work-id="${workId}" title="إعجاب بالعمل">
+                                    <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart"></i>
+                                    <span class="like-counter">${work.likesCount || 0}</span>
+                                </button>
+                                <span class="card-views-badge" title="عدد المشاهدات">
+                                    <i class="fa-regular fa-eye"></i>
+                                    <span class="view-counter">${work.viewsCount || 0}</span>
+                                </span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.4rem">
+                                ${ratioBadge}
+                                <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(art);
+
+                // Bind Like Button Click
+                const likeBtn = art.querySelector('.card-like-btn');
+                if (likeBtn) {
+                    likeBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const currentlyLiked = likeBtn.classList.contains('liked');
+                        const counterEl = likeBtn.querySelector('.like-counter');
+                        const iconEl = likeBtn.querySelector('i');
+                        const curCount = parseInt(counterEl.innerText || '0', 10);
+
+                        // Optimistic state
+                        if (!currentlyLiked) {
+                            likeBtn.classList.add('liked');
+                            iconEl.className = 'fa-solid fa-heart';
+                            counterEl.innerText = curCount + 1;
+                            work.likesCount = curCount + 1;
+                        } else {
+                            likeBtn.classList.remove('liked');
+                            iconEl.className = 'fa-regular fa-heart';
+                            counterEl.innerText = Math.max(0, curCount - 1);
+                            work.likesCount = Math.max(0, curCount - 1);
+                        }
+
+                        if (window.AJGateway) {
+                            const newTotal = await window.AJGateway.likeArtwork(workId, !currentlyLiked);
+                            if (typeof newTotal === 'number') {
+                                counterEl.innerText = newTotal;
+                                work.likesCount = newTotal;
+                            }
+                        }
+                    });
+                }
+
+                const cv = art.querySelector('.pixel-canvas');
+                if (cv) {
+                    const src = work.imageSrc || work.id;
+                    setTimeout(() => {
+                        paintCanvas(cv, src, false, true);
+                    }, i * 40);
+                }
+            });
+        }
+
+        // ── Smooth Fading Showcase Controller ──
+        const canvas1 = document.getElementById('hero-fade-canvas-1');
+        const canvas2 = document.getElementById('hero-fade-canvas-2');
+        const showcaseFrame = document.getElementById('hero-showcase-frame');
+        const titleEl = document.getElementById('showcase-title');
+        const categoryEl = document.getElementById('showcase-category');
+        const counterEl = document.getElementById('showcase-counter');
+        const dotsContainer = document.getElementById('showcase-dots');
+        const prevBtn = document.getElementById('showcase-prev-btn');
+        const nextBtn = document.getElementById('showcase-next-btn');
+        const inspectBtn = document.getElementById('showcase-inspect-btn');
+
+        let activeCanvas = canvas1;
+        let hiddenCanvas = canvas2;
+        let currentIdx = 0;
+        let isFading = false;
+        let autoTimer = null;
+
+        // Populate Pagination Dots
+        function renderShowcaseDots() {
+            if (!dotsContainer) return;
+            dotsContainer.innerHTML = '';
+            galleryData.forEach((_, i) => {
+                const dot = document.createElement('span');
+                dot.className = `showcase-dot ${i === currentIdx ? 'active' : ''}`;
+                dot.setAttribute('aria-label', `العمل ${i + 1}`);
+                dot.addEventListener('click', () => {
+                    if (i !== currentIdx) fadeToShowcase(i);
+                });
+                dotsContainer.appendChild(dot);
+            });
+            if (counterEl) {
+                counterEl.innerHTML = `<strong>${String(currentIdx + 1).padStart(2, '0')}</strong> / ${String(galleryData.length).padStart(2, '0')}`;
+            }
+        }
+
+        function updateDots(index) {
+            if (!dotsContainer) return;
+            const dots = dotsContainer.querySelectorAll('.showcase-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+
+        async function fadeToShowcase(targetIdx) {
+            if (isFading || !galleryData[targetIdx]) return;
+            isFading = true;
+
+            const item = galleryData[targetIdx];
+            currentIdx = targetIdx;
+
+            // Paint incoming canvas in memory before triggering fade
+            await paintCanvas(hiddenCanvas, item.id, true);
+
+            // Subtle text cross-fade
+            if (titleEl) titleEl.style.opacity = '0';
+            if (categoryEl) categoryEl.style.opacity = '0';
+
+            setTimeout(() => {
+                if (titleEl) {
+                    titleEl.innerText = item.title;
+                    titleEl.style.opacity = '1';
+                }
+                if (categoryEl) {
+                    categoryEl.innerText = item.category;
+                    categoryEl.style.opacity = '1';
+                }
+                if (counterEl) {
+                    counterEl.innerHTML = `<strong>${String(currentIdx + 1).padStart(2, '0')}</strong> / ${String(galleryData.length).padStart(2, '0')}`;
+                }
+            }, 300);
+
+            // Trigger CSS Smooth Opacity Dissolve
+            hiddenCanvas.classList.add('active');
+            activeCanvas.classList.remove('active');
+
+            // Swap references
+            const temp = activeCanvas;
+            activeCanvas = hiddenCanvas;
+            hiddenCanvas = temp;
+
+            updateDots(currentIdx);
+
+            setTimeout(() => {
+                isFading = false;
+            }, 1300);
+
+            restartShowcaseTimer();
+        }
+
+        function nextShowcase() {
+            if (!galleryData.length) return;
+            const next = (currentIdx + 1) % galleryData.length;
+            fadeToShowcase(next);
+        }
+
+        function prevShowcase() {
+            if (!galleryData.length) return;
+            const prev = (currentIdx - 1 + galleryData.length) % galleryData.length;
+            fadeToShowcase(prev);
+        }
+
+        function restartShowcaseTimer() {
+            if (autoTimer) clearInterval(autoTimer);
+            autoTimer = setInterval(() => {
+                if (!document.hidden) nextShowcase();
+            }, 5000);
+        }
+
+        if (nextBtn) nextBtn.addEventListener('click', nextShowcase);
+        if (prevBtn) prevBtn.addEventListener('click', prevShowcase);
+
+        // Frame and inspect triggers modal
+        if (showcaseFrame) {
+            showcaseFrame.addEventListener('click', () => {
+                const cur = galleryData[currentIdx];
+                if (cur) openWorkModal(cur.id, cur.title);
+            });
+            showcaseFrame.addEventListener('mouseenter', () => clearInterval(autoTimer));
+            showcaseFrame.addEventListener('mouseleave', restartShowcaseTimer);
+        }
+
+        if (inspectBtn) {
+            inspectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const cur = galleryData[currentIdx];
+                if (cur) openWorkModal(cur.id, cur.title);
+            });
+        }
+
+        // Initial Showcase Paint & Dots
+        renderShowcaseDots();
+        paintCanvas(activeCanvas, 0, true);
+        restartShowcaseTimer();
+
+        // ── Render Other Canvases Across The Website ──
+        function paintOtherCanvases() {
+            // Intro Sketch
+            const introCv = document.getElementById('intro-sketch-canvas');
+            if (introCv) paintCanvas(introCv, 2);
+
+            // Featured Salon Banner
+            const featuredCv = document.getElementById('featured-salon-canvas');
+            if (featuredCv) paintCanvas(featuredCv, 1, true);
+
+            // Curatorial Wall Frames
+            document.querySelectorAll('.curatorial-gallery-wall canvas').forEach(cv => {
+                const idx = parseInt(cv.dataset.heroIdx || '0', 10);
+                paintCanvas(cv, idx);
+            });
+
+            // Solid Background Gallery Grid
+            renderDynamicGalleryGrid();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', paintOtherCanvases);
+        } else {
+            paintOtherCanvases();
+        }
+
+        // ── Realtime Firebase Listeners Integration ──
+        window.addEventListener('aj-artworks-updated', (e) => {
+            const list = e.detail;
+            if (!list || !list.length) return;
+
+            const published = list.filter(w => w.isPublished !== false);
+            if (published.length > 0) {
+                galleryData = published.map((w, idx) => ({
+                    id: w.id || (w._firebaseKey !== undefined ? w._firebaseKey : (w.imageIdx !== undefined ? parseInt(w.imageIdx, 10) : idx % 8)),
+                    _firebaseKey: w._firebaseKey !== undefined ? w._firebaseKey : (w.id ? w.id : idx),
+                    imageSrc: w.imageSrc || null,
+                    imageIdx: w.imageIdx !== undefined ? w.imageIdx : null,
+                    title: w.title || 'عمل فني',
+                    titleEn: w.titleEn || '',
+                    category: w.category || 'تصميم',
+                    description: w.description || '',
+                    aspectRatio: w.aspectRatio || null,
+                    width: w.width || null,
+                    height: w.height || null,
+                    likesCount: typeof w.likesCount === 'number' ? w.likesCount : (w.likes || 0),
+                    viewsCount: typeof w.viewsCount === 'number' ? w.viewsCount : 0,
+                    driveFolder: w.driveFolder || 'Gallery_Images',
+                    isHeroFeatured: w.isHeroFeatured === true
+                }));
+
+                // Update gallery grid
+                renderDynamicGalleryGrid();
+
+                // If current index is out of bounds, reset
+                if (currentIdx >= galleryData.length) {
+                    currentIdx = 0;
+                }
+
+                // Update dots and counter
+                renderShowcaseDots();
+
+                // Update hero showcase info
+                const cur = galleryData[currentIdx];
+                if (cur && titleEl) titleEl.innerText = cur.title;
+                if (cur && categoryEl) categoryEl.innerText = cur.category;
+
+                // Also update featured salon banner if any item is featured
+                const featuredItem = galleryData.find(w => w.isHeroFeatured) || galleryData[1] || galleryData[0];
+                if (featuredItem) {
+                    const featuredTitle = document.querySelector('.meta-col-main h3');
+                    const featuredDate = document.querySelector('.meta-date');
+                    const featuredDesc = document.querySelector('.meta-col-desc p');
+                    const featuredBtn = document.querySelector('.meta-col-cta button');
+                    const featuredCv = document.getElementById('featured-salon-canvas');
+
+                    if (featuredTitle) featuredTitle.innerText = `${featuredItem.title} — ${featuredItem.titleEn || featuredItem.category}`;
+                    if (featuredDate) featuredDate.innerText = `${featuredItem.category} · 2026 Series`;
+                    if (featuredDesc && featuredItem.description) featuredDesc.innerText = featuredItem.description;
+                    if (featuredBtn) {
+                        featuredBtn.onclick = () => openWorkModal(featuredItem.id, featuredItem.title, featuredItem.description, featuredItem);
+                    }
+                    if (featuredCv) paintCanvas(featuredCv, featuredItem.id, true);
+                }
+            }
+        });
+
+        window.addEventListener('aj-settings-updated', (e) => {
+            const s = e.detail;
+            if (!s) return;
+            const heroTitle = document.querySelector('.hero-title');
+            const heroSubtitle = document.querySelector('.hero-subtitle');
+            const heroDesc = document.querySelector('.hero-desc');
+            if (heroTitle && s.heroTitle) heroTitle.innerText = s.heroTitle;
+            if (heroSubtitle && s.heroSubtitle) heroSubtitle.innerText = s.heroSubtitle;
+            if (heroDesc && s.heroDesc) heroDesc.innerText = s.heroDesc;
+
+            if (s.telegramUrl) {
+                document.querySelectorAll('a[href*="t.me"]').forEach(a => a.href = s.telegramUrl);
+            }
+            if (s.instagramUrl) {
+                document.querySelectorAll('a[href*="instagram.com"]').forEach(a => a.href = s.instagramUrl);
+            }
+        });
+
+        // ── Control Panel Gateway Triggers (Zero Exposure in index.html) ──
+        const openAdminBtn = document.getElementById('open-admin-btn');
+        if (openAdminBtn) {
+            openAdminBtn.addEventListener('click', () => {
+                if (window.AJGateway) window.AJGateway.openAdmin();
+            });
+        }
+
+        // 1. Keyboard combinations: Ctrl+Shift+A or Alt+A
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') || (e.altKey && e.key.toLowerCase() === 'a')) {
+                e.preventDefault();
+                if (window.AJGateway) window.AJGateway.openAdmin();
+            }
+        });
+
+        // 2. Secret Brand Easter Egg: Triple click on "ABDUL JABBAR" within 1.2 seconds
+        const brandLogo = document.querySelector('.gallery-brand');
+        if (brandLogo) {
+            let brandClicks = 0;
+            let brandTimer = null;
+            brandLogo.addEventListener('click', (e) => {
+                brandClicks++;
+                if (brandClicks === 1) {
+                    brandTimer = setTimeout(() => { brandClicks = 0; }, 1200);
+                } else if (brandClicks >= 3) {
+                    e.preventDefault();
+                    clearTimeout(brandTimer);
+                    brandClicks = 0;
+                    if (window.AJGateway) window.AJGateway.openAdmin();
+                }
+            });
+        }
+
+        // 3. Stealth URL Hash (#aj-admin or #admin) with automatic URL scrubbing
+        if (window.location.hash === '#aj-admin' || window.location.hash === '#admin') {
+            try {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            } catch (_) {}
+            if (window.AJGateway) window.AJGateway.openAdmin();
+        }
+
+        // ── Modal High-Resolution Inspection ──
         const modal = document.getElementById('ig-modal');
         const modalCanvas = document.getElementById('modal-canvas');
         const modalImageCol = document.getElementById('modal-image-col');
@@ -413,70 +897,150 @@
         const modalRes = document.getElementById('modal-resolution');
         const coffeeBtn = document.querySelector('.coffee-btn');
         const likesEl = document.getElementById('modal-likes-count');
-        let likes = 0, liked = false;
+        let likes = 88, liked = false;
 
-        document.getElementById('gallery-grid').addEventListener('click', e => {
-            const item = e.target.closest('.gallery-item');
-            if (!item) return;
-            const idx = parseInt(item.dataset.idx);
-            const title = item.querySelector('h4').innerText;
-            coffeeBtn.classList.remove('liked');
-            liked = false;
-            likes = Math.floor(Math.random() * 90) + 10;
-            likesEl.innerText = likes;
-            modalTitle.innerText = title;
-            modalRes.innerText = 'جاري التحميل...';
+        let currentModalWork = null;
+        window.openWorkModal = function (source, title = 'عمل فني', description = '', fullWork = null) {
+            if (!modal) return;
+
+            // Resolve full artwork object
+            let work = fullWork;
+            if (!work && typeof source === 'object' && source !== null && source.title) {
+                work = source;
+                source = work.imageSrc || work.id;
+                title = work.title;
+                description = work.description;
+            } else if (!work) {
+                work = galleryData.find(w => w.imageSrc === source || w.id === source || String(w.id) === String(source)) || { id: source, title, description, likesCount: 0, viewsCount: 0 };
+            }
+
+            currentModalWork = work;
+            const workId = String(work.id || work._firebaseKey || source);
+
+            // Record live view in Firebase RTDB
+            if (window.AJGateway && window.AJGateway.recordView) {
+                window.AJGateway.recordView(workId);
+                work.viewsCount = (work.viewsCount || 0) + 1;
+            }
+
+            // Sync Like state
+            liked = window.AJGateway && window.AJGateway.isArtworkLiked ? window.AJGateway.isArtworkLiked(workId) : false;
+            likes = typeof work.likesCount === 'number' ? work.likesCount : 0;
+
+            if (coffeeBtn) {
+                coffeeBtn.classList.toggle('liked', liked);
+            }
+            if (likesEl) likesEl.innerText = likes;
+
+            const modalViewsEl = document.getElementById('modal-views-count');
+            if (modalViewsEl) {
+                modalViewsEl.innerText = work.viewsCount || 1;
+            }
+
+            if (modalTitle) modalTitle.innerText = title;
+            const modalDesc = document.getElementById('modal-description');
+            if (modalDesc) {
+                modalDesc.innerText = description || 'تم فك تشفير هذا العمل في الذاكرة العشوائية بدقة فائقة عبر محرك img2Preview AES-GCM. لا توجد روابط وسائط قابلة للسرقة.';
+            }
+            if (modalRes) modalRes.innerText = 'جاري فك التشفير...';
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-            requestAnimationFrame(() => {
-                const cw = modalImageCol.clientWidth;
-                const ch = modalImageCol.clientHeight;
-                Img2Preview.paint(modalCanvas, idx, { hd: true, contain: true, w: cw, h: ch, watermark: true })
-                    .then(r => { modalRes.innerText = `${r.nw} x ${r.nh} Px`; })
-                    .catch(() => {});
-            });
-        });
 
-        coffeeBtn.addEventListener('click', function () {
-            if (!liked) {
-                this.classList.add('liked'); liked = true; likes++;
-                const f = document.createElement('span');
-                f.innerText = '☕'; f.className = 'floating-coffee';
-                this.appendChild(f);
-                setTimeout(() => f.remove(), 1000);
-            } else {
-                this.classList.remove('liked'); liked = false; likes--;
-            }
-            likesEl.innerText = likes;
-        });
+            requestAnimationFrame(() => {
+                const cw = modalImageCol ? modalImageCol.clientWidth : 800;
+                const ch = modalImageCol ? modalImageCol.clientHeight : 600;
+                Img2Preview.paint(modalCanvas, source, { hd: true, contain: true, w: cw, h: ch, watermark: true })
+                    .then(r => {
+                        const arStr = r.ar ? ` (نسبة ${r.ar})` : (r.nw && r.nh ? ` (نسبة ${(r.nw/r.nh).toFixed(2)})` : '');
+                        if (modalRes) modalRes.innerText = `${r.nw} × ${r.nh} Px${arStr}`;
+                    })
+                    .catch(() => {
+                        if (modalRes) modalRes.innerText = 'محمي بدقة عالية';
+                    });
+            });
+        };
+
+        const galleryGrid = document.getElementById('gallery-grid');
+        if (galleryGrid) {
+            galleryGrid.addEventListener('click', e => {
+                // Ignore clicks on like button
+                if (e.target.closest('.card-like-btn')) return;
+                const item = e.target.closest('.gallery-item');
+                if (!item) return;
+                const workIndex = parseInt(item.dataset.workIndex, 10);
+                const work = galleryData[workIndex] || galleryData.find(w => String(w.id) === String(item.dataset.idx)) || galleryData[0];
+                if (work) {
+                    openWorkModal(work.imageSrc || work.id, work.title, work.description, work);
+                }
+            });
+        }
 
         function closeModal() {
+            if (!modal) return;
             modal.classList.remove('active');
             document.body.style.overflow = '';
             setTimeout(() => {
                 const ctx = modalCanvas.getContext('2d');
-                ctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
-            }, 350);
+                if (ctx) ctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+            }, 300);
         }
-        document.querySelector('.modal-close').addEventListener('click', closeModal);
-        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
 
-        // ── Resize ──
+        const closeBtn = document.querySelector('.modal-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (modal) {
+            modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && modal && modal.classList.contains('active')) closeModal();
+        });
+
+        if (coffeeBtn) {
+            coffeeBtn.addEventListener('click', async function () {
+                if (!currentModalWork) return;
+                const workId = String(currentModalWork.id || currentModalWork._firebaseKey);
+                liked = !liked;
+                this.classList.toggle('liked', liked);
+
+                if (liked) {
+                    likes++;
+                } else {
+                    likes = Math.max(0, likes - 1);
+                }
+                currentModalWork.likesCount = likes;
+                if (likesEl) likesEl.innerText = likes;
+
+                // Sync card in grid
+                const cardLikeBtn = document.querySelector(`.card-like-btn[data-work-id="${workId}"]`);
+                if (cardLikeBtn) {
+                    cardLikeBtn.classList.toggle('liked', liked);
+                    const icon = cardLikeBtn.querySelector('i');
+                    if (icon) icon.className = liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                    const num = cardLikeBtn.querySelector('.like-counter');
+                    if (num) num.innerText = likes;
+                }
+
+                if (window.AJGateway && window.AJGateway.likeArtwork) {
+                    const updatedTotal = await window.AJGateway.likeArtwork(workId, liked);
+                    if (typeof updatedTotal === 'number') {
+                        likes = updatedTotal;
+                        currentModalWork.likesCount = updatedTotal;
+                        if (likesEl) likesEl.innerText = updatedTotal;
+                        if (cardLikeBtn) {
+                            const num = cardLikeBtn.querySelector('.like-counter');
+                            if (num) num.innerText = updatedTotal;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Resize handler
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
-                items.forEach(item => {
-                    const idx = parseInt(item.dataset.idx);
-                    const cv = item.querySelector('.pixel-canvas');
-                    Img2Preview.paint(cv, idx).catch(() => {});
-                });
-                document.querySelectorAll('.hero-canvas').forEach(c => {
-                    const idx = parseInt(c.dataset.heroIdx);
-                    Img2Preview.paint(c, idx, { w: c.clientWidth, h: c.clientHeight }).catch(() => {});
-                });
-            }, 400);
+                paintCanvas(activeCanvas, galleryData[currentIdx].id, true);
+            }, 350);
         });
 
     })();
