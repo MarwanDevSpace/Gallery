@@ -189,8 +189,21 @@
                 </div>
             </div>
 
-            <!-- Solid Background Museum Gallery Grid -->
-            <div class="gallery-exhibition-grid" id="gallery-grid"></div>
+            <!-- Solid Background Museum Gallery Grid with Polished Skeleton Loading Animation -->
+            <div class="gallery-exhibition-grid" id="gallery-grid">
+                <div class="gallery-loading-hud" id="gallery-loading-hud">
+                    <span class="gallery-spinner-ring"></span>
+                    <span class="gallery-loader-label">جاري استدعاء المعرض الفني والمقتنيات...</span>
+                </div>
+                <div class="gallery-skeleton-container" id="gallery-skeleton-container">
+                    <div class="gallery-skeleton-item sk-aspect-landscape"><div class="sk-canvas-box"><div class="sk-shimmer-sweep"></div></div><div class="sk-info"><div class="sk-chip"></div><div class="sk-bar"></div></div></div>
+                    <div class="gallery-skeleton-item sk-aspect-portrait"><div class="sk-canvas-box"><div class="sk-shimmer-sweep"></div></div><div class="sk-info"><div class="sk-chip"></div><div class="sk-bar"></div></div></div>
+                    <div class="gallery-skeleton-item sk-aspect-square"><div class="sk-canvas-box"><div class="sk-shimmer-sweep"></div></div><div class="sk-info"><div class="sk-chip"></div><div class="sk-bar"></div></div></div>
+                    <div class="gallery-skeleton-item sk-aspect-landscape"><div class="sk-canvas-box"><div class="sk-shimmer-sweep"></div></div><div class="sk-info"><div class="sk-chip"></div><div class="sk-bar"></div></div></div>
+                    <div class="gallery-skeleton-item sk-aspect-portrait"><div class="sk-canvas-box"><div class="sk-shimmer-sweep"></div></div><div class="sk-info"><div class="sk-chip"></div><div class="sk-bar"></div></div></div>
+                    <div class="gallery-skeleton-item sk-aspect-square"><div class="sk-canvas-box"><div class="sk-shimmer-sweep"></div></div><div class="sk-info"><div class="sk-chip"></div><div class="sk-bar"></div></div></div>
+                </div>
+            </div>
 
         </div>
     </section>
@@ -394,20 +407,23 @@
         }
 
         // ── Dynamic Masonry Gallery Grid Renderer ──
+        let hasReceivedSync = false;
+
         function renderDynamicGalleryGrid() {
             const grid = document.getElementById('gallery-grid');
             if (!grid) return;
+
+            // If sync has not completed yet, keep the luxury skeleton loader active
+            if (!hasReceivedSync) return;
+
             grid.innerHTML = '';
 
             if (!galleryData || galleryData.length === 0) {
                 grid.innerHTML = `
-                    <div class="gallery-empty-state">
-                        <div class="empty-icon"><i class="fa-regular fa-image"></i></div>
-                        <h3>المعرض جاهز لاستقبال أعمالك الفنية</h3>
-                        <p>لم يتم نشر أي عمل فني بعد. انقر على الزر أدناه لنشر أول أعمالك فوراً في المعرض.</p>
-                        <button type="button" class="empty-action-btn" onclick="if(window.AJGateway) window.AJGateway.openAdmin();">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر أول عمل فني</span>
-                        </button>
+                    <div class="gallery-serene-empty">
+                        <span class="serene-ornament">◇</span>
+                        <span>معرض عبد الجبار الرقمي · بانتظار إدراج الأعمال الفنية</span>
+                        <span class="serene-ornament">◇</span>
                     </div>
                 `;
                 return;
@@ -721,6 +737,7 @@
 
         // ── Realtime Firebase Listeners Integration ──
         window.addEventListener('aj-artworks-updated', (e) => {
+            hasReceivedSync = true;
             const list = e.detail;
             if (!list || !list.length) {
                 galleryData = [];
