@@ -1,12 +1,12 @@
 /**
  * AJ Gallery — Cryptographically Protected Backend Gateway & Live Stream Hub
- * Zero-Leakage Runtime Connector & Google Drive Resolver
+ * Zero-Leakage Runtime Connector & Media Stream Resolver
  * © 2026 Abdul Jabbar · All Rights Reserved
  */
 (function (window) {
     'use strict';
 
-    // ── Google Drive Master Reference ──
+    // ── Media Storage Reference ──
     const GOOGLE_DRIVE_FOLDER_ID = '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm';
     const GOOGLE_DRIVE_FOLDER_NAME = 'Gallery_Images';
     const GOOGLE_DRIVE_FOLDER_URL = `https://drive.google.com/drive/folders/${GOOGLE_DRIVE_FOLDER_ID}`;

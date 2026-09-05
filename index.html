@@ -99,7 +99,7 @@
                 <!-- Dynamic Control Bar Below Frame -->
                 <div class="showcase-dynamic-panel">
                     <div class="showcase-meta-info">
-                        <span class="showcase-category" id="showcase-category">Google Drive</span>
+                        <span class="showcase-category" id="showcase-category">معرض رقمي</span>
                         <h3 class="showcase-title" id="showcase-title">معرض عبد الجبار</h3>
                     </div>
 
@@ -161,7 +161,7 @@
             <!-- Editorial Header Row with Divider -->
             <div class="ozeum-header-row">
                 <h2 class="ozeum-main-title">
-                    الأعمال المختارة <span class="ar-title">· Google Drive</span>
+                    الأعمال الفنية المختارة <span class="ar-title">· معرض رقمي</span>
                 </h2>
                 <a href="https://www.instagram.com/abdul_7jabbar/" target="_blank" class="ozeum-all-link">
                     عرض الكل <span class="arrow">───→</span>
@@ -169,7 +169,7 @@
             </div>
             <div class="ozeum-header-divider"></div>
 
-            <!-- Featured Masterwork Banner Card (Shown only when Drive artwork is featured) -->
+            <!-- Featured Masterwork Banner Card -->
             <div class="featured-exhibition-card" id="featured-exhibition-card" style="display:none">
                 <div class="featured-canvas-wrapper">
                     <canvas class="hero-canvas" id="featured-salon-canvas"></canvas>
@@ -178,7 +178,7 @@
                 <div class="featured-exhibition-meta">
                     <div class="meta-col-main">
                         <h3 id="featured-title-display">عمل مميز</h3>
-                        <span class="meta-date" id="featured-cat-display">Google Drive</span>
+                        <span class="meta-date" id="featured-cat-display">عمل مميز</span>
                     </div>
                     <div class="meta-col-desc">
                         <p id="featured-desc-display"></p>
@@ -189,7 +189,7 @@
                 </div>
             </div>
 
-            <!-- Solid Background Museum Gallery Grid (Exclusively Google Drive) -->
+            <!-- Solid Background Museum Gallery Grid -->
             <div class="gallery-exhibition-grid" id="gallery-grid"></div>
 
         </div>
@@ -377,8 +377,145 @@
             }
         });
 
-        // ── Gallery Dataset (Exclusively Google Drive & Firebase RTDB) ──
-        let galleryData = [];
+        // ── Gallery Dataset (Curated Digital Masterworks & Firebase RTDB) ──
+        let galleryData = [
+            {
+                id: "work-1",
+                _firebaseKey: "work-1",
+                title: "تصميم واجهة المنظومة الرقمية",
+                titleEn: "Digital System Architecture",
+                category: "واجهات UI",
+                description: "تصميم واجهة مستخدم تفاعلية لمنظومة رقمية متكاملة تعتمد على البساطة الهيكلية وسلاسة التجربة وتوزيع العناصر وفق شبكة قياسية دقيقة.",
+                imageSrc: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "16:9",
+                orientation: "أفقي",
+                width: 2400,
+                height: 1350,
+                likesCount: 142,
+                viewsCount: 890,
+                isPublished: true,
+                isHeroFeatured: true
+            },
+            {
+                id: "work-2",
+                _firebaseKey: "work-2",
+                title: "هوية بصرية وعلامة تجارية معاصرة",
+                titleEn: "Contemporary Brand Identity",
+                category: "هوية بصرية",
+                description: "تطوير شامل للهوية البصرية وعناصر العلامة التجارية بتناسق لوني عصري واستخدام متقن للمساحات السلبية والرموز الهندسية.",
+                imageSrc: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "4:5",
+                orientation: "عمودي",
+                width: 1920,
+                height: 2400,
+                likesCount: 215,
+                viewsCount: 1240,
+                isPublished: true,
+                isHeroFeatured: false
+            },
+            {
+                id: "work-3",
+                _firebaseKey: "work-3",
+                title: "تكوينات تجريدية وتناغم بصري",
+                titleEn: "Abstract Visual Harmony",
+                category: "فنون رقمية",
+                description: "عمل فني رقمي تجريدي يستكشف التفاعل بين الخطوط الهندسية الصريحة والإضاءة الناعمة لخلق بعد فراغي متزن.",
+                imageSrc: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "1:1",
+                orientation: "مربع",
+                width: 2000,
+                height: 2000,
+                likesCount: 180,
+                viewsCount: 940,
+                isPublished: true,
+                isHeroFeatured: false
+            },
+            {
+                id: "work-4",
+                _firebaseKey: "work-4",
+                title: "عمارة واجهات تفاعلية وتجربة مستخدم",
+                titleEn: "Interactive UI & Experience Architecture",
+                category: "واجهات UI",
+                description: "هندسة واجهات برمجية عالية الكفاءة مع تدفق استخدام سلس يربط الوظائف الحيوية بمؤشرات تفاعلية ذكية.",
+                imageSrc: "https://images.unsplash.com/photo-1600132806608-231446b2e7af?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "16:10",
+                orientation: "أفقي",
+                width: 2400,
+                height: 1500,
+                likesCount: 98,
+                viewsCount: 670,
+                isPublished: true,
+                isHeroFeatured: false
+            },
+            {
+                id: "work-5",
+                _firebaseKey: "work-5",
+                title: "ملصق فني مفاهيمي وسرد بصري",
+                titleEn: "Conceptual Visual Storytelling Poster",
+                category: "بوسترات",
+                description: "بوستر إعلاني وفني ذو لغة بصرية متقدمة، يمزج التايبوغرافي الدقيق مع كتلة بصرية ديناميكية تمنح المشاهد عمقاً تعبيرياً.",
+                imageSrc: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "3:4",
+                orientation: "عمودي",
+                width: 1800,
+                height: 2400,
+                likesCount: 310,
+                viewsCount: 1530,
+                isPublished: true,
+                isHeroFeatured: true
+            },
+            {
+                id: "work-6",
+                _firebaseKey: "work-6",
+                title: "دراسة تناسق الألوان والمواد الفنية",
+                titleEn: "Chromatic Study & Material Harmony",
+                category: "هوية بصرية",
+                description: "استكشاف فني لتدرجات الألوان المتناسقة في تصاميم الطباعة الفاخرة، مع محاكاة الملامس الخشنة والتأثيرات الضوئية.",
+                imageSrc: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "4:3",
+                orientation: "أفقي",
+                width: 2400,
+                height: 1800,
+                likesCount: 165,
+                viewsCount: 820,
+                isPublished: true,
+                isHeroFeatured: false
+            },
+            {
+                id: "work-7",
+                _firebaseKey: "work-7",
+                title: "تراكيب ثلاثية الأبعاد وفضاء بصري",
+                titleEn: "3D Visual Structures & Spatial Forms",
+                category: "فنون رقمية",
+                description: "تجسيد رقمي ثلاثي الأبعاد يجمع المنحنيات العضوية بالتفاصيل الدقيقة والظلال الواقعية لإبراز العمق الجمالي.",
+                imageSrc: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "2:3",
+                orientation: "عمودي",
+                width: 1600,
+                height: 2400,
+                likesCount: 275,
+                viewsCount: 1190,
+                isPublished: true,
+                isHeroFeatured: false
+            },
+            {
+                id: "work-8",
+                _firebaseKey: "work-8",
+                title: "سلسلة ملصقات غرافيكية تجريبية",
+                titleEn: "Experimental Graphic Poster Series",
+                category: "بوسترات",
+                description: "سلسلة بوسترات معاصرة تعتمد أسلوب التباين البصري والتركيبات الجريئة مع خطوط طباعية حديثة ذات حضور قوي.",
+                imageSrc: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=2400&auto=format&fit=crop&q=95",
+                aspectRatio: "16:9",
+                orientation: "أفقي",
+                width: 2400,
+                height: 1350,
+                likesCount: 190,
+                viewsCount: 950,
+                isPublished: true,
+                isHeroFeatured: false
+            }
+        ];
 
         // ── Canvas Paint Helper (Supports Natural Aspect Ratio & Auto Height) ──
         function paintCanvas(canvas, source, hd = false, autoHeight = true) {
@@ -392,7 +529,7 @@
             return Img2Preview.paint(canvas, source, opts).catch(() => {});
         }
 
-        // ── Dynamic Masonry Gallery Grid Renderer (Only Drive Artworks) ──
+        // ── Dynamic Masonry Gallery Grid Renderer ──
         function renderDynamicGalleryGrid() {
             const grid = document.getElementById('gallery-grid');
             if (!grid) return;
@@ -401,11 +538,11 @@
             if (!galleryData || galleryData.length === 0) {
                 grid.innerHTML = `
                     <div class="gallery-empty-state">
-                        <div class="empty-icon"><i class="fa-brands fa-google-drive"></i></div>
-                        <h3>المعرض متصل بمجلد Google Drive</h3>
-                        <p>لم يتم نشر أي أعمال بعد في مجلد (Gallery_Images). استخدم لوحة التحكم لإضافة ونشر أعمال فنية مباشرة من درايف.</p>
+                        <div class="empty-icon"><i class="fa-regular fa-image"></i></div>
+                        <h3>لا توجد أعمال فنية منشورة حالياً</h3>
+                        <p>يمكنك إضافة ونشر أعمال فنية جديدة بسهولة عبر لوحة التحكم والإدارة.</p>
                         <button type="button" class="empty-action-btn" onclick="if(window.AJGateway) window.AJGateway.openAdmin();">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر أول عمل من Drive</span>
+                            <i class="fa-solid fa-cloud-arrow-up"></i> <span>إضافة عمل فني جديد</span>
                         </button>
                     </div>
                 `;
@@ -423,16 +560,19 @@
 
                 const workId = String(work.id || (work._firebaseKey !== undefined ? work._firebaseKey : i));
                 const isLiked = window.AJGateway && window.AJGateway.isArtworkLiked ? window.AJGateway.isArtworkLiked(workId) : false;
-                const ratioBadge = work.aspectRatio ? `<span class="caption-id" style="color:var(--accent-gold);font-weight:700">نسبة ${work.aspectRatio}</span>` : `<span class="caption-id">WORK #${String(i + 1).padStart(2, '0')}</span>`;
+
+                const orient = work.orientation || (work.aspectRatio ? (parseFloat(work.aspectRatio) > 1.15 ? 'أفقي' : (parseFloat(work.aspectRatio) < 0.88 ? 'عمودي' : 'مربع')) : '');
+                const orientIcon = (orient.includes('عمودي') || orient.includes('طولي')) ? 'arrows-up-down' : ((orient.includes('أفقي') || orient.includes('عريض')) ? 'arrows-left-right' : 'vector-square');
+                const ratioPill = orient ? `<span class="artwork-ratio-pill" title="${orient}"><i class="fa-solid fa-${orientIcon}"></i> ${orient} ${work.aspectRatio ? '· ' + work.aspectRatio : ''}</span>` : (work.aspectRatio ? `<span class="artwork-ratio-pill">${work.aspectRatio}</span>` : '');
 
                 art.innerHTML = `
                     <div class="item-mat-frame">
                         <canvas class="pixel-canvas"></canvas>
                     </div>
                     <div class="gallery-item-caption">
-                        <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:0.4rem">
                             <span class="caption-category">${work.category}</span>
-                            ${work.driveFolder ? `<span class="drive-pill-tag" title="مزامنة سحابية"><i class="fa-brands fa-google-drive"></i> Gallery_Images</span>` : ''}
+                            ${ratioPill}
                         </div>
                         <h4>${work.title}</h4>
                         <div class="card-action-bar">
@@ -447,7 +587,6 @@
                                 </span>
                             </div>
                             <div style="display:flex;align-items:center;gap:0.4rem">
-                                ${ratioBadge}
                                 <span class="caption-inspect-btn"><i class="fa-solid fa-expand"></i> معاينة</span>
                             </div>
                         </div>
@@ -527,7 +666,7 @@
             if (galleryData.length === 0) {
                 if (counterEl) counterEl.innerHTML = '<strong>00</strong> / 00';
                 if (titleEl) titleEl.innerText = 'معرض عبد الجبار الرقمي';
-                if (categoryEl) categoryEl.innerText = 'Google Drive';
+                if (categoryEl) categoryEl.innerText = 'معرض رقمي';
                 return;
             }
 
@@ -561,7 +700,7 @@
             const item = galleryData[targetIdx];
             currentIdx = targetIdx;
 
-            // Paint incoming canvas with Google Drive stream URL or source
+            // Paint incoming canvas with high-definition image source
             await paintCanvas(hiddenCanvas, item.imageSrc || item.id, true);
 
             // Subtle text cross-fade
@@ -643,7 +782,7 @@
         }
 
         // Draw elegant default monogram canvas when no artworks exist yet
-        function drawInitialDriveCanvas(canvas) {
+        function drawInitialDefaultCanvas(canvas) {
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const parent = canvas.parentElement;
@@ -674,7 +813,7 @@
 
             ctx.fillStyle = 'rgba(245, 244, 238, 0.65)';
             ctx.font = `500 ${Math.max(12, Math.round(w * 0.022))}px "Cairo", sans-serif`;
-            ctx.fillText('GOOGLE DRIVE CLOUD GALLERY · 2026', w/2, h/2 + 25);
+            ctx.fillText('ABDUL JABBAR DIGITAL STUDIO · 2026', w/2, h/2 + 25);
         }
 
         // Initial Showcase Paint
@@ -683,7 +822,7 @@
             paintCanvas(activeCanvas, galleryData[0].imageSrc || galleryData[0].id, true);
             restartShowcaseTimer();
         } else {
-            drawInitialDriveCanvas(activeCanvas);
+            drawInitialDefaultCanvas(activeCanvas);
         }
 
         // ── Render Other Canvases Across The Website ──
@@ -702,7 +841,7 @@
                 const dEl = document.getElementById('featured-desc-display');
                 const bEl = document.getElementById('featured-modal-btn');
                 if (tEl) tEl.innerText = featuredItem.title;
-                if (cEl) cEl.innerText = `${featuredItem.category} · Google Drive`;
+                if (cEl) cEl.innerText = `${featuredItem.category} · عمل مميز`;
                 if (dEl) dEl.innerText = featuredItem.description || '';
                 if (bEl) bEl.onclick = () => openWorkModal(featuredItem.imageSrc || featuredItem.id, featuredItem.title, featuredItem.description, featuredItem);
             } else if (featuredCard) {
@@ -725,23 +864,22 @@
                 renderShowcaseDots();
                 const featuredCard = document.getElementById('featured-exhibition-card');
                 if (featuredCard) featuredCard.style.display = 'none';
-                drawInitialDriveCanvas(activeCanvas);
+                drawInitialDefaultCanvas(activeCanvas);
                 return;
             }
 
             const published = list.filter(w => w.isPublished !== false);
             if (published.length > 0) {
                 galleryData = published.map((w, idx) => ({
-                    id: w.id || (w._firebaseKey !== undefined ? w._firebaseKey : (w.driveId || idx)),
+                    id: w.id || (w._firebaseKey !== undefined ? w._firebaseKey : idx),
                     _firebaseKey: w._firebaseKey !== undefined ? w._firebaseKey : (w.id ? w.id : idx),
                     imageSrc: w.imageSrc || null,
-                    driveId: w.driveId || null,
-                    driveFolder: w.driveFolder || 'Gallery_Images',
                     title: w.title || 'عمل فني',
                     titleEn: w.titleEn || '',
                     category: w.category || 'تصميم',
                     description: w.description || '',
                     aspectRatio: w.aspectRatio || null,
+                    orientation: w.orientation || null,
                     width: w.width || null,
                     height: w.height || null,
                     likesCount: typeof w.likesCount === 'number' ? w.likesCount : (w.likes || 0),
@@ -781,7 +919,7 @@
                     const dEl = document.getElementById('featured-desc-display');
                     const bEl = document.getElementById('featured-modal-btn');
                     if (tEl) tEl.innerText = featuredItem.title;
-                    if (cEl) cEl.innerText = `${featuredItem.category} · Google Drive`;
+                    if (cEl) cEl.innerText = `${featuredItem.category} · عمل مميز`;
                     if (dEl) dEl.innerText = featuredItem.description || '';
                     if (bEl) bEl.onclick = () => openWorkModal(featuredItem.imageSrc || featuredItem.id, featuredItem.title, featuredItem.description, featuredItem);
                 }
@@ -791,7 +929,7 @@
                 renderShowcaseDots();
                 const featuredCard = document.getElementById('featured-exhibition-card');
                 if (featuredCard) featuredCard.style.display = 'none';
-                drawInitialDriveCanvas(activeCanvas);
+                drawInitialDefaultCanvas(activeCanvas);
             }
         });
 
@@ -1008,7 +1146,7 @@
                 if (galleryData.length > 0 && galleryData[currentIdx]) {
                     paintCanvas(activeCanvas, galleryData[currentIdx].imageSrc || galleryData[currentIdx].id, true);
                 } else {
-                    drawInitialDriveCanvas(activeCanvas);
+                    drawInitialDefaultCanvas(activeCanvas);
                 }
             }, 350);
         });

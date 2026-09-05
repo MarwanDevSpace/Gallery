@@ -1,7 +1,6 @@
 /**
  * AJ Gallery — Exclusive Artwork Publisher Studio & Smart Masonry Engine
  * Protected by Cryptographic Token & Firebase Realtime Database
- * Integrated with Google Drive (Gallery_Images)
  * © 2026 Abdul Jabbar · All Rights Reserved
  */
 (function (window) {
@@ -22,9 +21,8 @@
         editingWorkId: null,
         currentFile: null,
         currentFileDataUrl: null,
-        currentDimensions: null,
-        currentDriveFile: null,
-        driveStatus: { connected: true, folderName: 'Gallery_Images', folderId: '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm' }
+        currentImageUrl: null,
+        currentDimensions: null
     };
 
     // Check existing session
@@ -60,16 +58,14 @@
         setTimeout(() => t.classList.remove('show'), 3800);
     }
 
-    // ── Check Google Drive Status ──
-    async function checkGoogleDriveStatus() {
+    // ── Check Database Sync Status ──
+    async function checkSyncStatus() {
         try {
-            const res = await fetch('/api/drive/status');
+            const res = await fetch('/api/artworks');
             if (res.ok) {
-                const data = await res.json();
-                AdminState.driveStatus = data;
                 const statusEl = document.getElementById('gdrive-status-badge');
                 if (statusEl) {
-                    statusEl.innerHTML = `<i class="fa-solid fa-cloud-check"></i> مجلد (Gallery_Images) متصل ومحمي`;
+                    statusEl.innerHTML = `<i class="fa-solid fa-cloud-check"></i> قاعدة البيانات متصلة`;
                 }
             }
         } catch (_) {}
@@ -90,15 +86,15 @@
         <div class="admin-modal-container" style="max-width:1180px;width:95%">
             <header class="admin-modal-header">
                 <div class="admin-header-title">
-                    <i class="fa-solid fa-cloud-arrow-up" style="color:var(--accent-gold);font-size:1.2rem"></i>
+                    <i class="fa-solid fa-sliders" style="color:var(--accent-gold);font-size:1.2rem"></i>
                     <div>
-                        <h3 id="admin-panel-title" style="margin:0;font-size:1.15rem">إدارة ونشر الأعمال</h3>
-                        <span style="font-size:0.75rem;color:var(--text-secondary)">مجلد Google Drive: Gallery_Images</span>
+                        <h3 id="admin-panel-title" style="margin:0;font-size:1.15rem">إدارة وتعديل المعرض</h3>
+                        <span style="font-size:0.75rem;color:var(--text-secondary)">نظام تحكم ونشر فوري متصل بقاعدة البيانات</span>
                     </div>
                 </div>
                 <div class="admin-header-actions">
                     <span class="gdrive-status-badge" id="gdrive-status-badge">
-                        <i class="fa-brands fa-google-drive"></i> متصل
+                        <i class="fa-solid fa-shield-halved"></i> متصل ومحمي
                     </span>
                     <button class="ozeum-mini-pill-btn" id="admin-key-btn" onclick="window.AJAdmin.changePin()" style="display:none;padding:0.25rem 0.65rem;font-size:0.72rem;color:var(--accent-gold);border-color:var(--border-gold)">
                         <i class="fa-solid fa-key"></i> الرمز (AKey)
@@ -146,53 +142,50 @@
                                     <h4 id="publisher-form-title" style="font-size:1.1rem;font-weight:700;color:var(--accent-gold);margin:0">
                                         <i class="fa-solid fa-circle-plus"></i> نشر عمل فني جديد
                                     </h4>
-                                    <span style="font-size:0.75rem;color:var(--text-secondary)">يتم حفظ العمل في مجلد Gallery_Images وعرضه فورياً للزوار</span>
+                                    <span style="font-size:0.75rem;color:var(--text-secondary)">يتم نشر العمل الفني فورياً في المعرض وتحديث الصفحة تلقائياً</span>
                                 </div>
                                 <button type="button" class="ozeum-mini-pill-btn" id="publisher-reset-btn" onclick="window.AJAdmin.resetForm()">
                                     <i class="fa-solid fa-rotate-left"></i> تفريغ الحقول
                                 </button>
                             </div>
 
-                            <!-- Google Drive Direct Import Box -->
+                            <!-- Image URL / Source Input Box -->
                             <div class="drive-input-box">
                                 <div class="drive-input-header">
                                     <span style="font-size:0.82rem;font-weight:700;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.4rem">
-                                        <i class="fa-brands fa-google-drive" style="color:#f59e0b"></i> مجلد Google Drive (Gallery_Images)
+                                        <i class="fa-solid fa-link" style="color:var(--accent-gold)"></i> رابط الصورة المباشر
                                     </span>
-                                    <a href="https://drive.google.com/drive/folders/1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm" target="_blank" class="ozeum-mini-pill-btn" style="text-decoration:none;padding:0.25rem 0.65rem;font-size:0.7rem;color:#f59e0b;border-color:rgba(245,158,11,0.35)">
-                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح المجلد في Drive
-                                    </a>
                                 </div>
                                 <div class="admin-input-group" style="margin:0">
-                                    <input type="text" id="input-drive-link" class="admin-input" placeholder="الصق رابط الصورة من Google Drive أو معرّف الملف (File ID)..." dir="ltr">
+                                    <input type="text" id="input-drive-link" class="admin-input" placeholder="الصق رابط أي صورة أو رابط مشاركة..." dir="ltr">
                                 </div>
                                 <span style="font-size:0.7rem;color:var(--text-muted)">
-                                    يقبل روابط المشاركة مثل: drive.google.com/file/d/1SIg96z1... أو معرّف الملف مباشرة. يتم استخراج الأبعاد تلقائياً وبث الصورة فائق السرعة.
+                                    يتم قياس أبعاد الصورة ونسبتها تلقائياً وعرضها بنظام متحفي سلس.
                                 </span>
                             </div>
 
                             <div style="text-align:center;margin:0.5rem 0;font-size:0.72rem;color:var(--text-muted)">
-                                ── أو ارفع ملف من جهازك ──
+                                ── أو اختر صورة من جهازك ──
                             </div>
 
                             <!-- Smart Dropzone -->
                             <div class="publisher-dropzone" id="publisher-dropzone">
                                 <input type="file" id="publisher-file-input" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none">
                                 <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
-                                <div class="dropzone-title">اسحب وأفلت الصورة هنا، أو اضغط للتحديد</div>
-                                <div class="dropzone-sub">يدعم الصور فائقة الدقة PNG, JPG, WEBP — يتم الكشف عن الأبعاد ونسبة العرض تلقائياً</div>
+                                <div class="dropzone-title">اسحب وأفلت الصورة هنا، أو اضغط للاختيار</div>
+                                <div class="dropzone-sub">يدعم صور PNG, JPG, WEBP — استكشاف فوري لأبعاد الصورة ونسبتها</div>
                                 <div class="dropzone-specs">
-                                    <span class="dropzone-spec-pill"><i class="fa-solid fa-expand"></i> أي نسبة أبعاد (طولية / عريضة / مربعة)</span>
-                                    <span class="dropzone-spec-pill"><i class="fa-brands fa-google-drive"></i> حفظ مباشر في Gallery_Images</span>
+                                    <span class="dropzone-spec-pill"><i class="fa-solid fa-expand"></i> جميع الأبعاد (طولية / عريضة / مربعة)</span>
+                                    <span class="dropzone-spec-pill"><i class="fa-solid fa-bolt"></i> معالجة فائقة النقاء</span>
                                 </div>
                             </div>
 
                             <!-- Image Meta Detected Banner -->
                             <div class="image-meta-banner" id="image-meta-banner" style="display:none">
                                 <div class="image-meta-info">
-                                    <span class="aspect-badge" id="detected-aspect-badge">النسبة: 4:5</span>
-                                    <span class="res-badge" id="detected-res-badge">2400 × 3000 Px</span>
-                                    <span style="font-size:0.75rem;color:var(--text-secondary)" id="detected-size-badge">Gallery_Images</span>
+                                    <span class="aspect-badge" id="detected-aspect-badge">النسبة: 16:9</span>
+                                    <span class="res-badge" id="detected-res-badge">2400 × 1350 Px</span>
+                                    <span style="font-size:0.75rem;color:var(--accent-gold);font-weight:600" id="detected-size-badge">أفقي</span>
                                 </div>
                                 <button type="button" class="ozeum-mini-pill-btn" style="padding:0.25rem 0.6rem;font-size:0.7rem" onclick="document.getElementById('publisher-file-input').click()">
                                     <i class="fa-solid fa-repeat"></i> تغيير
@@ -241,10 +234,15 @@
                                 </label>
                             </div>
 
-                            <!-- Submit Button -->
-                            <button type="submit" id="publisher-submit-btn" class="admin-btn-primary" style="padding:0.75rem;font-size:0.92rem;justify-content:center;margin-top:0.4rem">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل</span>
-                            </button>
+                            <!-- Action Buttons -->
+                            <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.6rem">
+                                <button type="submit" id="publisher-submit-btn" class="admin-btn-primary" style="flex:1;padding:0.75rem;font-size:0.92rem;justify-content:center">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل</span>
+                                </button>
+                                <button type="button" id="publisher-cancel-edit-btn" class="ozeum-mini-pill-btn" style="display:none;padding:0.75rem 1rem" onclick="window.AJAdmin.resetForm()">
+                                    إلغاء التعديل
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -307,7 +305,7 @@
 
         document.body.appendChild(modalDiv);
         bindModalEvents();
-        checkGoogleDriveStatus();
+        checkSyncStatus();
     }
 
     // ── Authentication Handlers with Firebase AKey ──
@@ -439,7 +437,7 @@
             if (logoutBtn) logoutBtn.style.display = 'inline-flex';
             if (keyBtn) keyBtn.style.display = 'inline-flex';
             renderPublishedWorksGrid();
-            checkGoogleDriveStatus();
+            checkSyncStatus();
         } else {
             loginView.style.display = 'flex';
             dashboardView.style.display = 'none';
@@ -451,6 +449,51 @@
                 pinInput.focus();
             }
         }
+    }
+
+    // ── Smart Aspect Ratio & Orientation Calculator ──
+    function calculateArtworkDimensions(nw, nh) {
+        const rawRatio = nw / nh;
+        let orientation = 'مربع';
+        let aspectRatio = '1:1';
+
+        if (Math.abs(rawRatio - 16/9) < 0.08) { aspectRatio = '16:9'; orientation = 'أفقي'; }
+        else if (Math.abs(rawRatio - 16/10) < 0.08) { aspectRatio = '16:10'; orientation = 'أفقي'; }
+        else if (Math.abs(rawRatio - 4/3) < 0.08) { aspectRatio = '4:3'; orientation = 'أفقي'; }
+        else if (Math.abs(rawRatio - 3/2) < 0.08) { aspectRatio = '3:2'; orientation = 'أفقي'; }
+        else if (Math.abs(rawRatio - 21/9) < 0.08) { aspectRatio = '21:9'; orientation = 'أفقي عريض'; }
+        else if (Math.abs(rawRatio - 1) < 0.08) { aspectRatio = '1:1'; orientation = 'مربع'; }
+        else if (Math.abs(rawRatio - 4/5) < 0.08) { aspectRatio = '4:5'; orientation = 'عمودي'; }
+        else if (Math.abs(rawRatio - 3/4) < 0.08) { aspectRatio = '3:4'; orientation = 'عمودي'; }
+        else if (Math.abs(rawRatio - 2/3) < 0.08) { aspectRatio = '2:3'; orientation = 'عمودي'; }
+        else if (Math.abs(rawRatio - 9/16) < 0.08) { aspectRatio = '9:16'; orientation = 'عمودي طولي'; }
+        else if (rawRatio > 1.15) { orientation = 'أفقي'; aspectRatio = `${rawRatio.toFixed(2)}:1`; }
+        else if (rawRatio < 0.88) { orientation = 'عمودي'; aspectRatio = `1:${(1/rawRatio).toFixed(2)}`; }
+        else { orientation = 'مربع'; aspectRatio = '1:1'; }
+
+        return {
+            width: nw,
+            height: nh,
+            aspectRatio: aspectRatio,
+            orientation: orientation,
+            rawRatio: rawRatio
+        };
+    }
+
+    function applyDetectedDimensions(dim, labelSuffix = '') {
+        AdminState.currentDimensions = dim;
+
+        const banner = document.getElementById('image-meta-banner');
+        const aspectBadge = document.getElementById('detected-aspect-badge');
+        const resBadge = document.getElementById('detected-res-badge');
+        const sizeBadge = document.getElementById('detected-size-badge');
+        const previewSpecs = document.getElementById('live-preview-specs');
+
+        if (banner) banner.style.display = 'flex';
+        if (aspectBadge) aspectBadge.innerText = `${dim.orientation} · نسبة ${dim.aspectRatio}`;
+        if (resBadge) resBadge.innerText = `${dim.width} × ${dim.height} Px`;
+        if (sizeBadge) sizeBadge.innerText = labelSuffix || `${dim.orientation}`;
+        if (previewSpecs) previewSpecs.innerText = `${dim.aspectRatio} · ${dim.orientation}`;
     }
 
     // ── Smart Image File Processing & Dimension Detection ──
@@ -466,33 +509,17 @@
         reader.onload = (e) => {
             const dataUrl = e.target.result;
             AdminState.currentFileDataUrl = dataUrl;
+            AdminState.currentImageUrl = dataUrl;
 
-            // Load in Image to detect exact dimensions & aspect ratio
             const img = new Image();
             img.onload = () => {
                 const nw = img.naturalWidth;
                 const nh = img.naturalHeight;
-                const ar = parseFloat((nw / nh).toFixed(2));
+                const dim = calculateArtworkDimensions(nw, nh);
                 const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                dim.size = file.size;
 
-                let orientation = 'مربعة (1:1)';
-                if (ar > 1.2) orientation = `عريضة (${ar}:1)`;
-                else if (ar < 0.9) orientation = `طولية (1:${(1/ar).toFixed(2)})`;
-
-                AdminState.currentDimensions = { width: nw, height: nh, aspectRatio: ar, size: file.size };
-
-                // Update UI Banners
-                const banner = document.getElementById('image-meta-banner');
-                const aspectBadge = document.getElementById('detected-aspect-badge');
-                const resBadge = document.getElementById('detected-res-badge');
-                const sizeBadge = document.getElementById('detected-size-badge');
-                const previewSpecs = document.getElementById('live-preview-specs');
-
-                if (banner) banner.style.display = 'flex';
-                if (aspectBadge) aspectBadge.innerText = `${orientation} · نسبة ${ar}`;
-                if (resBadge) resBadge.innerText = `${nw} × ${nh} Px`;
-                if (sizeBadge) sizeBadge.innerText = `${sizeMb} MB`;
-                if (previewSpecs) previewSpecs.innerText = `${nw}×${nh} (${ar})`;
+                applyDetectedDimensions(dim, `${sizeMb} MB`);
 
                 // Render onto live preview canvas
                 const liveCv = document.getElementById('live-preview-canvas');
@@ -505,7 +532,7 @@
                     }
                 }
 
-                showAdminToast(`تم تحليل الصورة: ${nw}×${nh} بكسل بنسبة ${orientation}`);
+                showAdminToast(`تم قياس أبعاد العمل: ${nw}×${nh} بكسل (${dim.orientation} · نسبة ${dim.aspectRatio})`);
             };
             img.src = dataUrl;
         };
@@ -513,19 +540,24 @@
         reader.readAsDataURL(file);
     }
 
-    // ── Google Drive File Link & ID Processor ──
-    function processDriveInput(inputVal) {
+    // ── Universal Smart Image Link Processor ──
+    function processImageLink(inputVal) {
         if (!inputVal || typeof inputVal !== 'string') return;
         const trimmed = inputVal.trim();
-        const fileId = (window.AJGateway && window.AJGateway.extractDriveId) ? window.AJGateway.extractDriveId(trimmed) : (trimmed.match(/([a-zA-Z0-9_-]{25,50})/) ? trimmed.match(/([a-zA-Z0-9_-]{25,50})/)[1] : null);
-        if (!fileId) return;
+        if (!trimmed) return;
 
-        const streamUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
-        const proxyUrl = `/api/drive/stream/${fileId}`;
+        let streamUrl = trimmed;
+        // Automatically resolve Google Drive links if provided
+        if (trimmed.includes('drive.google.com') || trimmed.includes('/d/')) {
+            const fileId = (window.AJGateway && window.AJGateway.extractDriveId) ? window.AJGateway.extractDriveId(trimmed) : (trimmed.match(/([a-zA-Z0-9_-]{25,50})/) ? trimmed.match(/([a-zA-Z0-9_-]{25,50})/)[1] : null);
+            if (fileId) {
+                streamUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
+            }
+        }
 
-        // Clear local file selection to prevent conflicts
         AdminState.currentFile = null;
         AdminState.currentFileDataUrl = null;
+        AdminState.currentImageUrl = streamUrl;
 
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -533,33 +565,10 @@
         img.onload = () => {
             const nw = img.naturalWidth;
             const nh = img.naturalHeight;
-            const ar = parseFloat((nw / nh).toFixed(2));
+            const dim = calculateArtworkDimensions(nw, nh);
 
-            let orientation = 'مربعة (1:1)';
-            if (ar > 1.2) orientation = `عريضة (${ar}:1)`;
-            else if (ar < 0.9) orientation = `طولية (1:${(1/ar).toFixed(2)})`;
+            applyDetectedDimensions(dim, 'رابط مباشر');
 
-            AdminState.currentDriveFile = {
-                fileId: fileId,
-                streamUrl: streamUrl,
-                dimensions: { width: nw, height: nh, aspectRatio: ar }
-            };
-            AdminState.currentDimensions = AdminState.currentDriveFile.dimensions;
-
-            // UI Banners
-            const banner = document.getElementById('image-meta-banner');
-            const aspectBadge = document.getElementById('detected-aspect-badge');
-            const resBadge = document.getElementById('detected-res-badge');
-            const sizeBadge = document.getElementById('detected-size-badge');
-            const previewSpecs = document.getElementById('live-preview-specs');
-
-            if (banner) banner.style.display = 'flex';
-            if (aspectBadge) aspectBadge.innerText = `${orientation} · نسبة ${ar}`;
-            if (resBadge) resBadge.innerText = `${nw} × ${nh} Px (Google Drive)`;
-            if (sizeBadge) sizeBadge.innerText = `Gallery_Images`;
-            if (previewSpecs) previewSpecs.innerText = `${nw}×${nh} (${ar})`;
-
-            // Live preview
             const liveCv = document.getElementById('live-preview-canvas');
             const placeholder = document.getElementById('preview-placeholder');
             if (placeholder) placeholder.style.display = 'none';
@@ -570,15 +579,30 @@
                 }
             }
 
-            showAdminToast(`تم تحليل صورة Google Drive بنجاح: ${nw}×${nh} بكسل بنسبة ${orientation}`);
+            showAdminToast(`تم قياس أبعاد العمل: ${nw}×${nh} (${dim.orientation} · نسبة ${dim.aspectRatio})`);
         };
 
         img.onerror = () => {
-            if (img.src !== proxyUrl) {
-                img.src = proxyUrl;
-                return;
-            }
-            showAdminToast('تعذر تحميل الصورة من رابط Google Drive — تأكد من تفعيل "أي شخص لديه الرابط يمكنه المشاهدة"', false);
+            const imgFallback = new Image();
+            imgFallback.onload = () => {
+                const nw = imgFallback.naturalWidth;
+                const nh = imgFallback.naturalHeight;
+                const dim = calculateArtworkDimensions(nw, nh);
+                applyDetectedDimensions(dim, 'رابط مباشر');
+
+                const liveCv = document.getElementById('live-preview-canvas');
+                const placeholder = document.getElementById('preview-placeholder');
+                if (placeholder) placeholder.style.display = 'none';
+                if (liveCv && window.Img2Preview) {
+                    liveCv.style.display = 'block';
+                    Img2Preview.paint(liveCv, streamUrl, { autoHeight: true, watermark: true });
+                }
+                showAdminToast(`تم قياس أبعاد العمل: ${dim.orientation} · نسبة ${dim.aspectRatio}`);
+            };
+            imgFallback.onerror = () => {
+                showAdminToast('تعذر تحميل الصورة من هذا الرابط — تأكد من صحته وإمكانية الوصول إليه', false);
+            };
+            imgFallback.src = streamUrl;
         };
 
         img.src = streamUrl;
@@ -648,17 +672,21 @@
             const isPub = work.isPublished !== false;
             const isHero = work.isHeroFeatured === true;
 
+            const orient = work.orientation || (work.aspectRatio ? (parseFloat(work.aspectRatio) > 1.15 ? 'أفقي' : (parseFloat(work.aspectRatio) < 0.88 ? 'عمودي' : 'مربع')) : '');
+            const icon = (orient.includes('عمودي') || orient.includes('طولي')) ? 'arrows-up-down' : ((orient.includes('أفقي') || orient.includes('عريض')) ? 'arrows-left-right' : 'vector-square');
+            const orientBadge = orient ? `<span class="artwork-ratio-pill" style="font-size:0.6rem;padding:0.1rem 0.4rem"><i class="fa-solid fa-${icon}"></i> ${orient} ${work.aspectRatio ? '· ' + work.aspectRatio : ''}</span>` : (work.aspectRatio ? `<span class="artwork-ratio-pill" style="font-size:0.6rem;padding:0.1rem 0.4rem">${work.aspectRatio}</span>` : '');
+
             card.innerHTML = `
                 <div class="mini-work-thumb">
                     <canvas class="mini-cv" data-work-idx="${workId}"></canvas>
                 </div>
                 <div class="mini-work-meta">
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                        <h5 style="margin:0">${escapeHtml(work.title || 'بدون عنوان')}</h5>
-                        ${(work.driveFolder || work.driveId) ? `<span class="drive-pill-tag" style="font-size:0.6rem;padding:0.1rem 0.35rem"><i class="fa-brands fa-google-drive"></i> Drive</span>` : ''}
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:0.35rem">
+                        <h5 style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(work.title || 'بدون عنوان')}</h5>
+                        ${orientBadge}
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.2rem">
-                        <span>${escapeHtml(work.category || 'تصميم')} · ${work.aspectRatio ? 'نسبة ' + work.aspectRatio : 'تلقائي'}</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.25rem">
+                        <span>${escapeHtml(work.category || 'تصميم')}</span>
                         <div style="display:flex;gap:0.45rem;font-size:0.68rem;color:var(--text-muted)">
                             <span title="إعجابات"><i class="fa-solid fa-heart" style="color:#fb7185"></i> ${work.likesCount || 0}</span>
                             <span title="مشاهدات"><i class="fa-solid fa-eye"></i> ${work.viewsCount || 0}</span>
@@ -715,11 +743,11 @@
         AdminState.editingWorkId = null;
         AdminState.currentFile = null;
         AdminState.currentFileDataUrl = null;
+        AdminState.currentImageUrl = null;
         AdminState.currentDimensions = null;
-        AdminState.currentDriveFile = null;
 
-        const driveIn = document.getElementById('input-drive-link');
-        if (driveIn) driveIn.value = '';
+        const linkIn = document.getElementById('input-drive-link');
+        if (linkIn) linkIn.value = '';
 
         const formTitle = document.getElementById('publisher-form-title');
         if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-circle-plus"></i> نشر عمل فني جديد';
@@ -727,8 +755,11 @@
         const submitBtn = document.getElementById('publisher-submit-btn');
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل في المعرض ومجلد Gallery_Images</span>';
+            submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر العمل في المعرض</span>';
         }
+
+        const cancelBtn = document.getElementById('publisher-cancel-edit-btn');
+        if (cancelBtn) cancelBtn.style.display = 'none';
 
         const banner = document.getElementById('image-meta-banner');
         if (banner) banner.style.display = 'none';
@@ -741,12 +772,14 @@
         const liveTitle = document.getElementById('live-preview-title');
         const liveCat = document.getElementById('live-preview-category');
         const liveDesc = document.getElementById('live-preview-desc');
+        const liveSpecs = document.getElementById('live-preview-specs');
         if (liveTitle) liveTitle.innerText = 'عنوان العمل الفني';
         if (liveCat) liveCat.innerText = 'UI ARCHITECTURE';
         if (liveDesc) liveDesc.innerText = 'سيظهر وصف العمل الفني هنا كما يُعرض في نافذة المعاينة المكبرة.';
+        if (liveSpecs) liveSpecs.innerText = 'RATIO: AUTO';
     }
 
-    // ── Start Editing Artwork ──
+    // ── Start Editing Artwork (Smart Auto-Population) ──
     function startEditWork(workId) {
         const work = AdminState.artworks.find(w => String(w._firebaseKey) === String(workId) || String(w.id) === String(workId)) || AdminState.artworks[workId];
         if (!work) return;
@@ -760,27 +793,44 @@
         document.getElementById('input-work-published').checked = work.isPublished !== false;
         document.getElementById('input-work-hero').checked = work.isHeroFeatured === true;
 
-        const driveIn = document.getElementById('input-drive-link');
-        if (driveIn) {
-            driveIn.value = work.driveId || (work.imageSrc && work.imageSrc.includes('google') ? work.imageSrc : '');
+        const linkIn = document.getElementById('input-drive-link');
+        if (linkIn) {
+            linkIn.value = work.imageSrc || '';
         }
 
-        const vaultSel = document.getElementById('input-work-img-idx');
-        if (vaultSel && work.imageIdx !== undefined) vaultSel.value = work.imageIdx;
+        AdminState.currentImageUrl = work.imageSrc || null;
+
+        // Auto-detect or restore dimensions
+        if (work.width && work.height) {
+            const dim = calculateArtworkDimensions(work.width, work.height);
+            if (work.aspectRatio) dim.aspectRatio = work.aspectRatio;
+            if (work.orientation) dim.orientation = work.orientation;
+            applyDetectedDimensions(dim, 'العمل الحالي');
+        } else if (work.aspectRatio) {
+            const banner = document.getElementById('image-meta-banner');
+            const aspectBadge = document.getElementById('detected-aspect-badge');
+            if (banner) banner.style.display = 'flex';
+            if (aspectBadge) aspectBadge.innerText = `${work.orientation || ''} · نسبة ${work.aspectRatio}`;
+        }
 
         const formTitle = document.getElementById('publisher-form-title');
         if (formTitle) formTitle.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات: ${escapeHtml(work.title)}`;
 
         const submitBtn = document.getElementById('publisher-submit-btn');
-        if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات في المعرض ومجلد Gallery_Images';
+        if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>حفظ التعديلات</span>';
+
+        const cancelBtn = document.getElementById('publisher-cancel-edit-btn');
+        if (cancelBtn) cancelBtn.style.display = 'inline-flex';
 
         // Update live preview
         const liveTitle = document.getElementById('live-preview-title');
         const liveCat = document.getElementById('live-preview-category');
         const liveDesc = document.getElementById('live-preview-desc');
+        const liveSpecs = document.getElementById('live-preview-specs');
         if (liveTitle) liveTitle.innerText = work.title || '';
         if (liveCat) liveCat.innerText = (work.category || '').toUpperCase();
         if (liveDesc) liveDesc.innerText = work.description || '';
+        if (liveSpecs) liveSpecs.innerText = `${work.aspectRatio || 'AUTO'} · ${work.orientation || ''}`;
 
         const liveCv = document.getElementById('live-preview-canvas');
         const placeholder = document.getElementById('preview-placeholder');
@@ -803,15 +853,17 @@
         }
 
         const submitBtn = document.getElementById('publisher-submit-btn');
+        const isEditing = AdminState.editingWorkId !== null;
+
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري حفظ ومزامنة الصورة مع Gallery_Images...';
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${isEditing ? 'جاري حفظ التعديلات...' : 'جاري نشر العمل...'}`;
         }
 
         try {
             let uploadedUrl = null;
 
-            // 1. If user selected a new image file, upload to Gallery_Images backend route
+            // 1. If user selected a local file, upload or use data URL
             if (AdminState.currentFile && AdminState.currentFileDataUrl) {
                 try {
                     const uploadRes = await fetch('/api/drive/upload', {
@@ -831,17 +883,17 @@
                     if (uploadRes.ok) {
                         const uploadJson = await uploadRes.json();
                         uploadedUrl = uploadJson.url;
-                        showAdminToast(`تم إيداع الصورة في مجلد Gallery_Images بنجاح!`);
-                    } else {
-                        console.warn('[Drive Upload] Cloud upload notice, saving directly.');
                     }
                 } catch (upErr) {
-                    console.warn('[Upload Error]', upErr);
+                    console.warn('[Upload Info]', upErr);
                 }
             }
 
-            // 2. Prepare Artwork record
-            const newWorkData = {
+            // Find current work if editing to preserve unchanged media
+            const existingWork = isEditing ? (AdminState.artworks.find(w => String(w._firebaseKey) === String(AdminState.editingWorkId) || String(w.id) === String(AdminState.editingWorkId)) || {}) : {};
+
+            // 2. Prepare Artwork Record
+            const workRecord = {
                 title: formData.title.trim().slice(0, 140),
                 titleEn: (formData.titleEn || '').trim().slice(0, 140),
                 category: formData.category.trim().slice(0, 70),
@@ -852,47 +904,45 @@
                 _secKey: SEC_KEY
             };
 
-            if (AdminState.currentDriveFile) {
-                newWorkData.imageSrc = AdminState.currentDriveFile.streamUrl;
-                newWorkData.driveId = AdminState.currentDriveFile.fileId;
-                newWorkData.driveFolder = 'Gallery_Images';
-                newWorkData.width = AdminState.currentDriveFile.dimensions.width;
-                newWorkData.height = AdminState.currentDriveFile.dimensions.height;
-                newWorkData.aspectRatio = AdminState.currentDriveFile.dimensions.aspectRatio;
-            } else if (uploadedUrl) {
-                newWorkData.imageSrc = uploadedUrl;
-                newWorkData.driveFolder = 'Gallery_Images';
-                if (AdminState.currentDimensions) {
-                    newWorkData.width = AdminState.currentDimensions.width;
-                    newWorkData.height = AdminState.currentDimensions.height;
-                    newWorkData.aspectRatio = AdminState.currentDimensions.aspectRatio;
-                }
+            // Image Source Resolution
+            if (uploadedUrl) {
+                workRecord.imageSrc = uploadedUrl;
             } else if (AdminState.currentFileDataUrl) {
-                newWorkData.imageSrc = AdminState.currentFileDataUrl;
-                newWorkData.driveFolder = 'Gallery_Images';
-                if (AdminState.currentDimensions) {
-                    newWorkData.width = AdminState.currentDimensions.width;
-                    newWorkData.height = AdminState.currentDimensions.height;
-                    newWorkData.aspectRatio = AdminState.currentDimensions.aspectRatio;
-                }
+                workRecord.imageSrc = AdminState.currentFileDataUrl;
+            } else if (AdminState.currentImageUrl) {
+                workRecord.imageSrc = AdminState.currentImageUrl;
+            } else if (existingWork.imageSrc) {
+                workRecord.imageSrc = existingWork.imageSrc;
             } else if (formData.imageIdx !== '') {
-                newWorkData.imageIdx = parseInt(formData.imageIdx, 10);
+                workRecord.imageIdx = parseInt(formData.imageIdx, 10);
             }
 
-            if (AdminState.editingWorkId !== null) {
+            // Dimensions & Orientation Resolution
+            if (AdminState.currentDimensions) {
+                workRecord.width = AdminState.currentDimensions.width;
+                workRecord.height = AdminState.currentDimensions.height;
+                workRecord.aspectRatio = AdminState.currentDimensions.aspectRatio;
+                workRecord.orientation = AdminState.currentDimensions.orientation;
+            } else if (existingWork.aspectRatio) {
+                workRecord.width = existingWork.width || null;
+                workRecord.height = existingWork.height || null;
+                workRecord.aspectRatio = existingWork.aspectRatio;
+                workRecord.orientation = existingWork.orientation || 'أفقي';
+            }
+
+            if (isEditing) {
                 const targetRef = db.ref(`artworks/${AdminState.editingWorkId}`);
-                await targetRef.update(newWorkData);
-                showAdminToast('تم تحديث العمل الفني بنجاح في المعرض ومجلد Gallery_Images!');
+                await targetRef.update(workRecord);
+                showAdminToast('تم تحديث العمل الفني بنجاح!');
             } else {
-                newWorkData.createdAt = new Date().toISOString();
-                newWorkData.id = 'work-' + Date.now();
-                newWorkData.driveFolder = 'Gallery_Images';
-                newWorkData.likesCount = 0;
-                newWorkData.viewsCount = 0;
+                workRecord.createdAt = new Date().toISOString();
+                workRecord.id = 'work-' + Date.now();
+                workRecord.likesCount = 0;
+                workRecord.viewsCount = 0;
 
                 const nextIndex = AdminState.artworks.length;
-                await db.ref(`artworks/${nextIndex}`).set(newWorkData);
-                showAdminToast('تم نشر العمل الفني بنجاح في المعرض العام ومجلد Gallery_Images!');
+                await db.ref(`artworks/${nextIndex}`).set(workRecord);
+                showAdminToast('تم نشر العمل الفني بنجاح في المعرض!');
             }
 
             resetArtworkForm();
@@ -906,14 +956,24 @@
         }
     }
 
-    // ── Delete Artwork ──
+    // ── Smart Delete Artwork ──
     async function deleteWork(workId) {
-        if (!confirm('هل أنت متأكد من رغبتك في حذف هذا العمل الفني من المعرض؟')) return;
-        if (!db) return;
+        const work = AdminState.artworks.find(w => String(w._firebaseKey) === String(workId) || String(w.id) === String(workId)) || AdminState.artworks[workId];
+        const title = work ? `"${work.title}"` : 'هذا العمل';
+
+        if (!confirm(`هل أنت متأكد من حذف العمل الفني ${title} نهائياً من المعرض؟`)) return;
+        if (!db) {
+            showAdminToast('قاعدة البيانات غير متصلة', false);
+            return;
+        }
 
         try {
             await db.ref(`artworks/${workId}`).remove();
-            showAdminToast('تم حذف العمل بنجاح');
+            showAdminToast('تم حذف العمل الفني بنجاح');
+            // If editing this work, reset the form
+            if (String(AdminState.editingWorkId) === String(workId)) {
+                resetArtworkForm();
+            }
         } catch (err) {
             showAdminToast('تعذر الحذف: ' + err.message, false);
         }
@@ -977,20 +1037,20 @@
             });
         }
 
-        // Google Drive Link input listener
-        const driveInput = document.getElementById('input-drive-link');
-        if (driveInput) {
-            let driveTimer = null;
-            const onDriveChange = () => {
-                clearTimeout(driveTimer);
-                driveTimer = setTimeout(() => {
-                    const val = driveInput.value.trim();
-                    if (val) processDriveInput(val);
+        // Image Link input listener
+        const imageLinkInput = document.getElementById('input-drive-link');
+        if (imageLinkInput) {
+            let linkTimer = null;
+            const onLinkChange = () => {
+                clearTimeout(linkTimer);
+                linkTimer = setTimeout(() => {
+                    const val = imageLinkInput.value.trim();
+                    if (val) processImageLink(val);
                 }, 350);
             };
-            driveInput.addEventListener('input', onDriveChange);
-            driveInput.addEventListener('paste', () => setTimeout(onDriveChange, 40));
-            driveInput.addEventListener('change', onDriveChange);
+            imageLinkInput.addEventListener('input', onLinkChange);
+            imageLinkInput.addEventListener('paste', () => setTimeout(onLinkChange, 40));
+            imageLinkInput.addEventListener('change', onLinkChange);
         }
 
         // Publisher form

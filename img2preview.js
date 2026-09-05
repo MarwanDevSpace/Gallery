@@ -230,8 +230,17 @@
                 }
 
                 return new Promise((resolve, reject) => {
+                    let triedWithoutCors = false;
                     const img = new Image();
-                    img.crossOrigin = 'anonymous';
+
+                    const tryLoad = (useCors) => {
+                        if (useCors) {
+                            img.crossOrigin = 'anonymous';
+                        } else {
+                            img.removeAttribute('crossorigin');
+                        }
+                        img.src = src;
+                    };
 
                     img.onload = () => {
                         const dpr = window.devicePixelRatio || 1;
@@ -305,14 +314,23 @@
 
                         // Immediate zero-exposure memory scrub
                         img.src = 'data:,';
-                        _meta.set(canvas, { nw, nh, dw, dh, idx });
+                        _meta.set(canvas, { nw, nh, dw, dh, idx, ar });
                         _shieldCanvasInstance(canvas);
                         canvas.classList.add('loaded');
                         resolve({ nw, nh, dw, dh, ar });
                     };
 
-                    img.onerror = () => reject(new Error(`[img2Preview AES-GCM] Failed to load media index ${idx}`));
-                    img.src = src;
+                    img.onerror = () => {
+                        if (!triedWithoutCors) {
+                            triedWithoutCors = true;
+                            tryLoad(false);
+                        } else {
+                            console.warn('[img2Preview] Could not load image from:', src);
+                            reject(new Error(`[img2Preview] Failed to load media: ${src}`));
+                        }
+                    };
+
+                    tryLoad(true);
                 });
             } catch (err) {
                 console.error('[img2Preview AES-GCM]', err);

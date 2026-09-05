@@ -1316,7 +1316,7 @@ body {
 
 /* ══ RESPONSIVE VIEWPORT PERFECTION ══ */
 @media (max-width: 1200px) {
-    .gallery-exhibition-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .gallery-exhibition-grid { column-count: 3; column-gap: 1.6rem; }
     .featured-exhibition-meta { grid-template-columns: 1fr 1fr; }
     .meta-col-cta { grid-column: 1 / -1; justify-content: flex-start; }
 }
@@ -1326,7 +1326,7 @@ body {
     .nav-links { display: none; }
     .nav-container { justify-content: space-between; }
     .intro-grid, .services-grid { grid-template-columns: 1fr; }
-    .gallery-exhibition-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gallery-exhibition-grid { column-count: 2; column-gap: 1.2rem; }
     .curatorial-gallery-wall { grid-template-columns: repeat(3, 1fr); }
     .showcase-dynamic-panel { flex-direction: column; align-items: center; text-align: center; border-radius: var(--radius-md); }
     .showcase-meta-info { text-align: center; }
@@ -1336,7 +1336,7 @@ body {
 }
 
 @media (max-width: 560px) {
-    .gallery-exhibition-grid { grid-template-columns: 1fr; }
+    .gallery-exhibition-grid { column-count: 1; column-gap: 0; }
     .ozeum-header-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
     .hero-actions { flex-direction: column; width: 100%; }
     .ozeum-pill-btn { width: 100%; justify-content: center; }
@@ -1939,7 +1939,7 @@ body {
     display: block;
 }
 
-/* Google Drive Sync Status */
+/* Database Sync Status */
 .gdrive-sync-panel {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-color);
@@ -2131,6 +2131,35 @@ body {
     border: 1px solid var(--border-subtle);
 }
 
+/* Natural Aspect Ratio & Orientation Pill */
+.artwork-ratio-pill {
+    font-family: var(--font-en), var(--font-main);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    background: rgba(210, 176, 121, 0.08);
+    border: 1px solid rgba(210, 176, 121, 0.28);
+    padding: 0.18rem 0.55rem;
+    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+}
+
+.artwork-ratio-pill i {
+    font-size: 0.62rem;
+    color: var(--accent-gold);
+}
+
+.gallery-item:hover .artwork-ratio-pill {
+    background: rgba(210, 176, 121, 0.16);
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 12px rgba(210, 176, 121, 0.2);
+}
+
 .drive-pill-tag {
     font-family: var(--font-en);
     font-size: 0.65rem;
@@ -2152,7 +2181,7 @@ body {
     100% { transform: scale(1); }
 }
 
-/* Google Drive Link Publisher Input Box */
+/* Image Link Publisher Input Box */
 .drive-input-box {
     background: rgba(255, 255, 255, 0.02);
     border: 1px dashed rgba(210, 176, 121, 0.4);
@@ -2172,7 +2201,7 @@ body {
     gap: 0.5rem;
 }
 
-/* Gallery Empty State (Exclusively Google Drive) */
+/* Gallery Empty State */
 .gallery-empty-state {
     grid-column: 1 / -1;
     display: flex;
