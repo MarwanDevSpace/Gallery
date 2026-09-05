@@ -377,145 +377,9 @@
             }
         });
 
-        // ── Gallery Dataset (Curated Digital Masterworks & Firebase RTDB) ──
-        let galleryData = [
-            {
-                id: "work-1",
-                _firebaseKey: "work-1",
-                title: "تصميم واجهة المنظومة الرقمية",
-                titleEn: "Digital System Architecture",
-                category: "واجهات UI",
-                description: "تصميم واجهة مستخدم تفاعلية لمنظومة رقمية متكاملة تعتمد على البساطة الهيكلية وسلاسة التجربة وتوزيع العناصر وفق شبكة قياسية دقيقة.",
-                imageSrc: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "16:9",
-                orientation: "أفقي",
-                width: 2400,
-                height: 1350,
-                likesCount: 142,
-                viewsCount: 890,
-                isPublished: true,
-                isHeroFeatured: true
-            },
-            {
-                id: "work-2",
-                _firebaseKey: "work-2",
-                title: "هوية بصرية وعلامة تجارية معاصرة",
-                titleEn: "Contemporary Brand Identity",
-                category: "هوية بصرية",
-                description: "تطوير شامل للهوية البصرية وعناصر العلامة التجارية بتناسق لوني عصري واستخدام متقن للمساحات السلبية والرموز الهندسية.",
-                imageSrc: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "4:5",
-                orientation: "عمودي",
-                width: 1920,
-                height: 2400,
-                likesCount: 215,
-                viewsCount: 1240,
-                isPublished: true,
-                isHeroFeatured: false
-            },
-            {
-                id: "work-3",
-                _firebaseKey: "work-3",
-                title: "تكوينات تجريدية وتناغم بصري",
-                titleEn: "Abstract Visual Harmony",
-                category: "فنون رقمية",
-                description: "عمل فني رقمي تجريدي يستكشف التفاعل بين الخطوط الهندسية الصريحة والإضاءة الناعمة لخلق بعد فراغي متزن.",
-                imageSrc: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "1:1",
-                orientation: "مربع",
-                width: 2000,
-                height: 2000,
-                likesCount: 180,
-                viewsCount: 940,
-                isPublished: true,
-                isHeroFeatured: false
-            },
-            {
-                id: "work-4",
-                _firebaseKey: "work-4",
-                title: "عمارة واجهات تفاعلية وتجربة مستخدم",
-                titleEn: "Interactive UI & Experience Architecture",
-                category: "واجهات UI",
-                description: "هندسة واجهات برمجية عالية الكفاءة مع تدفق استخدام سلس يربط الوظائف الحيوية بمؤشرات تفاعلية ذكية.",
-                imageSrc: "https://images.unsplash.com/photo-1600132806608-231446b2e7af?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "16:10",
-                orientation: "أفقي",
-                width: 2400,
-                height: 1500,
-                likesCount: 98,
-                viewsCount: 670,
-                isPublished: true,
-                isHeroFeatured: false
-            },
-            {
-                id: "work-5",
-                _firebaseKey: "work-5",
-                title: "ملصق فني مفاهيمي وسرد بصري",
-                titleEn: "Conceptual Visual Storytelling Poster",
-                category: "بوسترات",
-                description: "بوستر إعلاني وفني ذو لغة بصرية متقدمة، يمزج التايبوغرافي الدقيق مع كتلة بصرية ديناميكية تمنح المشاهد عمقاً تعبيرياً.",
-                imageSrc: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "3:4",
-                orientation: "عمودي",
-                width: 1800,
-                height: 2400,
-                likesCount: 310,
-                viewsCount: 1530,
-                isPublished: true,
-                isHeroFeatured: true
-            },
-            {
-                id: "work-6",
-                _firebaseKey: "work-6",
-                title: "دراسة تناسق الألوان والمواد الفنية",
-                titleEn: "Chromatic Study & Material Harmony",
-                category: "هوية بصرية",
-                description: "استكشاف فني لتدرجات الألوان المتناسقة في تصاميم الطباعة الفاخرة، مع محاكاة الملامس الخشنة والتأثيرات الضوئية.",
-                imageSrc: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "4:3",
-                orientation: "أفقي",
-                width: 2400,
-                height: 1800,
-                likesCount: 165,
-                viewsCount: 820,
-                isPublished: true,
-                isHeroFeatured: false
-            },
-            {
-                id: "work-7",
-                _firebaseKey: "work-7",
-                title: "تراكيب ثلاثية الأبعاد وفضاء بصري",
-                titleEn: "3D Visual Structures & Spatial Forms",
-                category: "فنون رقمية",
-                description: "تجسيد رقمي ثلاثي الأبعاد يجمع المنحنيات العضوية بالتفاصيل الدقيقة والظلال الواقعية لإبراز العمق الجمالي.",
-                imageSrc: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "2:3",
-                orientation: "عمودي",
-                width: 1600,
-                height: 2400,
-                likesCount: 275,
-                viewsCount: 1190,
-                isPublished: true,
-                isHeroFeatured: false
-            },
-            {
-                id: "work-8",
-                _firebaseKey: "work-8",
-                title: "سلسلة ملصقات غرافيكية تجريبية",
-                titleEn: "Experimental Graphic Poster Series",
-                category: "بوسترات",
-                description: "سلسلة بوسترات معاصرة تعتمد أسلوب التباين البصري والتركيبات الجريئة مع خطوط طباعية حديثة ذات حضور قوي.",
-                imageSrc: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=2400&auto=format&fit=crop&q=95",
-                aspectRatio: "16:9",
-                orientation: "أفقي",
-                width: 2400,
-                height: 1350,
-                likesCount: 190,
-                viewsCount: 950,
-                isPublished: true,
-                isHeroFeatured: false
-            }
-        ];
+        // ── Gallery Dataset (Initialized Clean & Dynamic via Firebase RTDB) ──
+        let galleryData = [];
+
 
         // ── Canvas Paint Helper (Supports Natural Aspect Ratio & Auto Height) ──
         function paintCanvas(canvas, source, hd = false, autoHeight = true) {
@@ -539,10 +403,10 @@
                 grid.innerHTML = `
                     <div class="gallery-empty-state">
                         <div class="empty-icon"><i class="fa-regular fa-image"></i></div>
-                        <h3>لا توجد أعمال فنية منشورة حالياً</h3>
-                        <p>يمكنك إضافة ونشر أعمال فنية جديدة بسهولة عبر لوحة التحكم والإدارة.</p>
+                        <h3>المعرض جاهز لاستقبال أعمالك الفنية</h3>
+                        <p>لم يتم نشر أي عمل فني بعد. انقر على الزر أدناه لنشر أول أعمالك فوراً في المعرض.</p>
                         <button type="button" class="empty-action-btn" onclick="if(window.AJGateway) window.AJGateway.openAdmin();">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> <span>إضافة عمل فني جديد</span>
+                            <i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر أول عمل فني</span>
                         </button>
                     </div>
                 `;
@@ -933,23 +797,6 @@
             }
         });
 
-        window.addEventListener('aj-settings-updated', (e) => {
-            const s = e.detail;
-            if (!s) return;
-            const heroTitle = document.querySelector('.hero-title');
-            const heroSubtitle = document.querySelector('.hero-subtitle');
-            const heroDesc = document.querySelector('.hero-desc');
-            if (heroTitle && s.heroTitle) heroTitle.innerText = s.heroTitle;
-            if (heroSubtitle && s.heroSubtitle) heroSubtitle.innerText = s.heroSubtitle;
-            if (heroDesc && s.heroDesc) heroDesc.innerText = s.heroDesc;
-
-            if (s.telegramUrl) {
-                document.querySelectorAll('a[href*="t.me"]').forEach(a => a.href = s.telegramUrl);
-            }
-            if (s.instagramUrl) {
-                document.querySelectorAll('a[href*="instagram.com"]').forEach(a => a.href = s.instagramUrl);
-            }
-        });
 
         // ── Control Panel Gateway Triggers (Zero Exposure in index.html) ──
         const openAdminBtn = document.getElementById('open-admin-btn');

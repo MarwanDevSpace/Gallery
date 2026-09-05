@@ -11,8 +11,6 @@
     const auth = (window.firebase && typeof firebase.auth === 'function') ? firebase.auth() : null;
     const SEC_KEY = (window.AJGateway && window.AJGateway.getSecKey()) || 'a4f9b8c2d1e0f7e6d5c4b3a291827364';
 
-    // SHA-256 hash of default master PIN (2026)
-    const DEFAULT_MASTER_HASH = '158a323a7ba44870f23d96f1516dd70aa48e9a72db4ebb026b0a89e212a208ab';
 
     // ── Publisher State ──
     const AdminState = {
@@ -308,26 +306,33 @@
         checkSyncStatus();
     }
 
-    // ── Authentication Handlers with Firebase AKey ──
+    // ── Authentication Handlers with Firebase AKey (Primary & Direct) ──
     async function handleLogin(enteredPin) {
         const pin = String(enteredPin || '').trim();
-        if (!pin) return;
+        if (!pin) {
+            showAdminToast('يرجى إدخال رمز الدخول (AKey)', false);
+            return;
+        }
 
         let isAuthorized = false;
 
-        // 1. Check with Backend PIN verification API
+        // 1. PRIMARY: Direct authoritative check against Firebase Realtime Database AKey.json
         try {
-            const res = await fetch('/api/admin/verify-pin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin: pin })
-            });
-            if (res.ok) {
-                isAuthorized = true;
+            const directRes = await fetch('https://aj-gallery-2026-default-rtdb.firebaseio.com/AKey.json');
+            if (directRes.ok) {
+                const akeyRaw = await directRes.json();
+                if (akeyRaw !== null && akeyRaw !== undefined) {
+                    const serverAKey = String(akeyRaw).trim();
+                    if (serverAKey && pin === serverAKey) {
+                        isAuthorized = true;
+                    }
+                }
             }
-        } catch (_) {}
+        } catch (fetchErr) {
+            console.warn('[AKey Fetch Warning]', fetchErr);
+        }
 
-        // 2. Direct Firebase RTDB AKey verification fallback
+        // 2. Direct Firebase SDK AKey verification
         if (!isAuthorized && db) {
             try {
                 const snap = await db.ref('AKey').once('value');
@@ -340,18 +345,30 @@
             } catch (_) {}
         }
 
-        // 3. Fallback to default PIN 2026 if uninitialized
-        if (!isAuthorized && pin === '2026') {
-            isAuthorized = true;
+        // 3. Backend Proxy verification
+        if (!isAuthorized) {
+            try {
+                const res = await fetch('/api/admin/verify-pin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pin })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        isAuthorized = true;
+                    }
+                }
+            } catch (_) {}
         }
 
         if (isAuthorized) {
             AdminState.isAuthenticated = true;
             sessionStorage.setItem('aj_auth_token', 'sec_session_active_2026');
-            showAdminToast('تم الدخول بنجاح');
+            showAdminToast('تم الدخول بنجاح عبر رمز AKey');
             updateAdminPanelUI();
         } else {
-            showAdminToast('رمز الدخول (AKey) غير صحيح', false);
+            showAdminToast('رمز الدخول (AKey) غير مصرح به', false);
         }
     }
 
@@ -366,9 +383,29 @@
 
         let updated = false;
 
-        // 1. Backend update
+        // 1. Direct Firebase RTDB update
         try {
-            const res = await fetch('/api/admin/update-pin', {
+            const res = await fetch('https://aj-gallery-2026-default-rtdb.firebaseio.com/AKey.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(clean)
+            });
+            if (res.ok) updated = true;
+        } catch (_) {}
+
+        // 2. Direct Firebase SDK update
+        if (!updated && db) {
+            try {
+                await db.ref('AKey').set(clean);
+                updated = true;
+            } catch (err) {
+                console.warn('[Update AKey SDK]', err.message);
+            }
+        }
+
+        // 3. Backend update sync
+        try {
+            await fetch('/api/admin/update-pin', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -376,18 +413,7 @@
                 },
                 body: JSON.stringify({ newPin: clean })
             });
-            if (res.ok) updated = true;
         } catch (_) {}
-
-        // 2. Direct Firebase update fallback
-        if (!updated && db) {
-            try {
-                await db.ref('AKey').set(clean);
-                updated = true;
-            } catch (err) {
-                console.warn('[Update AKey]', err.message);
-            }
-        }
 
         if (updated) {
             showAdminToast('تم حفظ رمز الدخول الجديد (AKey) في Firebase بنجاح');
@@ -892,7 +918,7 @@
             // Find current work if editing to preserve unchanged media
             const existingWork = isEditing ? (AdminState.artworks.find(w => String(w._firebaseKey) === String(AdminState.editingWorkId) || String(w.id) === String(AdminState.editingWorkId)) || {}) : {};
 
-            // 2. Prepare Artwork Record
+            // 2. Prepare Clean Artwork Record
             const workRecord = {
                 title: formData.title.trim().slice(0, 140),
                 titleEn: (formData.titleEn || '').trim().slice(0, 140),
@@ -900,6 +926,7 @@
                 description: (formData.description || '').trim().slice(0, 700),
                 isPublished: Boolean(formData.isPublished),
                 isHeroFeatured: Boolean(formData.isHeroFeatured),
+                createdAt: existingWork.createdAt || new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 _secKey: SEC_KEY
             };
@@ -913,9 +940,11 @@
                 workRecord.imageSrc = AdminState.currentImageUrl;
             } else if (existingWork.imageSrc) {
                 workRecord.imageSrc = existingWork.imageSrc;
-            } else if (formData.imageIdx !== '') {
-                workRecord.imageIdx = parseInt(formData.imageIdx, 10);
             }
+
+            // Preserve or initialize likes and views
+            workRecord.likesCount = typeof existingWork.likesCount === 'number' ? existingWork.likesCount : 0;
+            workRecord.viewsCount = typeof existingWork.viewsCount === 'number' ? existingWork.viewsCount : 0;
 
             // Dimensions & Orientation Resolution
             if (AdminState.currentDimensions) {
@@ -928,20 +957,36 @@
                 workRecord.height = existingWork.height || null;
                 workRecord.aspectRatio = existingWork.aspectRatio;
                 workRecord.orientation = existingWork.orientation || 'أفقي';
+            } else {
+                workRecord.aspectRatio = '16:9';
+                workRecord.orientation = 'أفقي';
             }
 
             if (isEditing) {
-                const targetRef = db.ref(`artworks/${AdminState.editingWorkId}`);
-                await targetRef.update(workRecord);
-                showAdminToast('تم تحديث العمل الفني بنجاح!');
+                const targetKey = AdminState.editingWorkId;
+                workRecord.id = existingWork.id || ('work-' + (parseInt(targetKey, 10) + 1));
+                if (db) {
+                    await db.ref(`artworks/${targetKey}`).update(workRecord);
+                } else {
+                    await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks/${targetKey}.json`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(workRecord)
+                    });
+                }
+                showAdminToast('تم حفظ تعديلات العمل بنجاح');
             } else {
-                workRecord.createdAt = new Date().toISOString();
-                workRecord.id = 'work-' + Date.now();
-                workRecord.likesCount = 0;
-                workRecord.viewsCount = 0;
-
                 const nextIndex = AdminState.artworks.length;
-                await db.ref(`artworks/${nextIndex}`).set(workRecord);
+                workRecord.id = 'work-' + (nextIndex + 1);
+                if (db) {
+                    await db.ref(`artworks/${nextIndex}`).set(workRecord);
+                } else {
+                    await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks/${nextIndex}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(workRecord)
+                    });
+                }
                 showAdminToast('تم نشر العمل الفني بنجاح في المعرض!');
             }
 
@@ -956,25 +1001,53 @@
         }
     }
 
-    // ── Smart Delete Artwork ──
+    // ── Smart Delete Artwork with Contiguous Re-indexing ──
     async function deleteWork(workId) {
-        const work = AdminState.artworks.find(w => String(w._firebaseKey) === String(workId) || String(w.id) === String(workId)) || AdminState.artworks[workId];
+        const index = AdminState.artworks.findIndex(w => String(w._firebaseKey) === String(workId) || String(w.id) === String(workId));
+        const work = index !== -1 ? AdminState.artworks[index] : null;
         const title = work ? `"${work.title}"` : 'هذا العمل';
 
         if (!confirm(`هل أنت متأكد من حذف العمل الفني ${title} نهائياً من المعرض؟`)) return;
-        if (!db) {
-            showAdminToast('قاعدة البيانات غير متصلة', false);
-            return;
-        }
 
         try {
-            await db.ref(`artworks/${workId}`).remove();
-            showAdminToast('تم حذف العمل الفني بنجاح');
-            // If editing this work, reset the form
+            const remaining = AdminState.artworks.filter((_, idx) => idx !== index && String(_.id) !== String(workId) && String(_._firebaseKey) !== String(workId));
+            
+            const reindexed = remaining.map((item, idx) => {
+                const clean = { ...item };
+                delete clean._firebaseKey;
+                clean.id = 'work-' + (idx + 1);
+                clean._secKey = SEC_KEY;
+                return clean;
+            });
+
+            if (reindexed.length === 0) {
+                if (db) {
+                    await db.ref('artworks').remove();
+                } else {
+                    await fetch('https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks.json', { method: 'DELETE' });
+                }
+                AdminState.artworks = [];
+            } else {
+                if (db) {
+                    await db.ref('artworks').set(reindexed);
+                } else {
+                    await fetch('https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks.json', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(reindexed)
+                    });
+                }
+                AdminState.artworks = reindexed;
+            }
+
+            renderPublishedWorksGrid();
+            window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: AdminState.artworks }));
+            showAdminToast('تم حذف العمل الفني وإعادة ترتيب المعرض بنجاح');
             if (String(AdminState.editingWorkId) === String(workId)) {
                 resetArtworkForm();
             }
         } catch (err) {
+            console.error('[Delete Error]', err);
             showAdminToast('تعذر الحذف: ' + err.message, false);
         }
     }
@@ -982,14 +1055,27 @@
     // ── Toggle Hero Featured ──
     async function toggleHeroFeatured(workId) {
         const work = AdminState.artworks.find(w => String(w._firebaseKey) === String(workId) || String(w.id) === String(workId)) || AdminState.artworks[workId];
-        if (!work || !db) return;
+        if (!work) return;
 
         const newHeroState = !(work.isHeroFeatured === true);
+        const targetKey = work._firebaseKey !== undefined ? work._firebaseKey : workId;
+
         try {
-            await db.ref(`artworks/${workId}`).update({
-                isHeroFeatured: newHeroState,
-                _secKey: SEC_KEY
-            });
+            if (db) {
+                await db.ref(`artworks/${targetKey}`).update({
+                    isHeroFeatured: newHeroState,
+                    _secKey: SEC_KEY
+                });
+            } else {
+                await fetch(`https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks/${targetKey}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isHeroFeatured: newHeroState, _secKey: SEC_KEY })
+                });
+            }
+            work.isHeroFeatured = newHeroState;
+            renderPublishedWorksGrid();
+            window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: AdminState.artworks }));
             showAdminToast(newHeroState ? 'تم تمييز العمل في واجهة المعرض' : 'تم إلغاء التمييز');
         } catch (err) {
             showAdminToast('خطأ أثناء تحديث التمييز', false);

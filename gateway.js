@@ -164,41 +164,52 @@
 
     // ── Live Reactive Data Stream (Dispatches to Public Frontend) ──
     function initPublicSync() {
-        if (!_dbInstance) {
-            // If offline or Firebase SDK unavailable, fetch once from backend proxy
-            fetch('/api/artworks')
-                .then(r => r.json())
-                .then(data => {
+        // Fast direct fetch for immediate zero-delay loading
+        const directUrl = 'https://aj-gallery-2026-default-rtdb.firebaseio.com/artworks.json';
+        fetch(directUrl)
+            .then(r => r.json())
+            .then(data => {
+                if (data !== undefined) {
+                    let list = [];
                     if (data) {
-                        let list = Array.isArray(data) ? data.filter(Boolean) : Object.keys(data).map(k => ({ ...data[k], _firebaseKey: k }));
-                        window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
+                        if (Array.isArray(data)) {
+                            list = data.filter(item => item !== null);
+                        } else if (typeof data === 'object') {
+                            list = Object.keys(data).map(k => ({ ...data[k], _firebaseKey: k }));
+                        }
                     }
-                })
-                .catch(() => {});
-            return;
-        }
-
-        _dbInstance.ref('artworks').on('value', (snap) => {
-            const val = snap.val();
-            let list = [];
-            if (val) {
-                if (Array.isArray(val)) {
-                    list = val.filter(item => item !== null);
-                } else if (typeof val === 'object') {
-                    list = Object.keys(val).map(k => ({ ...val[k], _firebaseKey: k }));
+                    window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
                 }
-            }
-            window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
-        }, (err) => {
-            console.warn('[Gateway Sync] Read status:', err.code);
-        });
+            })
+            .catch(() => {
+                fetch('/api/artworks')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data) {
+                            let list = Array.isArray(data) ? data.filter(Boolean) : Object.keys(data).map(k => ({ ...data[k], _firebaseKey: k }));
+                            window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
+                        }
+                    })
+                    .catch(() => {});
+            });
 
-        _dbInstance.ref('settings').on('value', (snap) => {
-            const val = snap.val() || {};
-            window.dispatchEvent(new CustomEvent('aj-settings-updated', { detail: val }));
-        }, (err) => {
-            console.warn('[Gateway Sync] Read status:', err.code);
-        });
+        // Live Realtime WebSocket synchronization
+        if (_dbInstance) {
+            _dbInstance.ref('artworks').on('value', (snap) => {
+                const val = snap.val();
+                let list = [];
+                if (val) {
+                    if (Array.isArray(val)) {
+                        list = val.filter(item => item !== null);
+                    } else if (typeof val === 'object') {
+                        list = Object.keys(val).map(k => ({ ...val[k], _firebaseKey: k }));
+                    }
+                }
+                window.dispatchEvent(new CustomEvent('aj-artworks-updated', { detail: list }));
+            }, (err) => {
+                console.warn('[Gateway Sync] Read status:', err.code);
+            });
+        }
     }
 
     // ── On-Demand Stealth Admin Loader ──
