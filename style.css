@@ -2354,6 +2354,69 @@ body {
     opacity: 0.5;
 }
 
+/* Google Drive Bridge Configuration Modal */
+.gdrive-cfg-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 4, 8, 0.92);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
 
+.gdrive-cfg-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: all;
+}
 
+.gdrive-cfg-card {
+    background: #111118;
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-md);
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(210, 176, 121, 0.15);
+    width: min(680px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.8rem;
+    color: var(--text-primary);
+    direction: rtl;
+}
 
+.gdrive-cfg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.gdrive-step-box {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.gdrive-step-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin-bottom: 0.4rem;
+}
+
+.gdrive-step-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
