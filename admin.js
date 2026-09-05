@@ -163,21 +163,44 @@
                         <i class="fa-brands fa-google"></i> تسجيل الدخول بحساب Google وتفويض المعرض
                     </button>
                 </div>
+
+                <!-- Origin Mismatch Solution Box -->
+                <div id="origin-mismatch-helper" style="margin-top:0.85rem;padding:0.75rem;background:rgba(239, 68, 68, 0.08);border:1px solid rgba(239, 68, 68, 0.25);border-radius:6px;font-size:0.78rem;line-height:1.5">
+                    <div style="font-weight:700;color:#f87171;display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem">
+                        <i class="fa-solid fa-triangle-exclamation"></i> إذا ظهر لك خطأ <code>origin_mismatch</code> (خطأ 400):
+                    </div>
+                    <div style="color:var(--text-secondary);font-size:0.75rem">
+                        سياسة أمان Google تطلب إضافة رابط موقعك الحالي إلى قائمة <strong>Authorized JavaScript origins</strong> في Google Cloud Console:
+                    </div>
+                    <div style="margin-top:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+                        <span style="font-size:0.72rem;color:var(--text-secondary)">الرابط المطلوب إضافته:</span>
+                        <code id="current-origin-display" style="background:#050508;color:var(--accent-gold);padding:0.2rem 0.55rem;border-radius:4px;font-family:monospace;direction:ltr;border:1px solid rgba(210,176,121,0.25)">http://localhost:3000</code>
+                        <button type="button" class="ozeum-mini-pill-btn" id="copy-origin-btn" style="padding:0.2rem 0.55rem;font-size:0.7rem">
+                            <i class="fa-regular fa-copy"></i> نسخ الرابط
+                        </button>
+                        <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="ozeum-mini-pill-btn" style="padding:0.2rem 0.55rem;font-size:0.7rem;color:#4285f4;border-color:rgba(66,133,244,0.4)">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح Google Cloud Console
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <!-- Method 2: Direct Access Token / Custom Key -->
+            <!-- Method 2: Direct Access Token / Custom Key (Instant Zero-Setup) -->
             <div class="gdrive-step-box">
                 <div class="gdrive-step-title">
                     <i class="fa-solid fa-key"></i>
-                    <span>أو إدخال رمز الوصول الفوري (OAuth Access Token)</span>
+                    <span>أو استخدام رمز الوصول الفوري (OAuth Access Token — بدون إعدادات)</span>
                 </div>
                 <div class="gdrive-step-desc">
-                    إذا كان لديك رمز وصول مؤقت من Google OAuth Playground أو تطبيق الهاتف، الصقه هنا للتفعيل الفوري:
+                    يمكنك الحصول على رمز وصول فوري خلال 10 ثوانٍ عبر Google OAuth Playground ولصقه هنا ليعمل الرفع والحذف فوراً:
                 </div>
                 <div class="admin-input-group" style="margin-top:0.6rem">
                     <input type="password" id="gdrive-token-input" class="admin-input" placeholder="ya29.a0AfH6SM..." dir="ltr" style="font-family:monospace;font-size:0.8rem">
                 </div>
-                <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end">
+                <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:space-between;align-items:center;flex-wrap:wrap">
+                    <a href="https://developers.google.com/oauthplayground/#step1&apisSelect=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file" target="_blank" class="ozeum-mini-pill-btn" style="padding:0.35rem 0.8rem;font-size:0.75rem;color:#10b981;border-color:rgba(16,185,129,0.3)">
+                        <i class="fa-solid fa-bolt"></i> توليد الرمز في ثوانٍ (OAuth Playground)
+                    </a>
                     <button type="button" class="ozeum-mini-pill-btn" id="gdrive-save-token-btn" style="padding:0.4rem 1rem;font-size:0.78rem;color:var(--accent-gold);border-color:var(--border-gold)">
                         <i class="fa-solid fa-floppy-disk"></i> حفظ وتفعيل الرمز
                     </button>
@@ -229,6 +252,21 @@
         if (oauthBtn) {
             oauthBtn.addEventListener('click', () => {
                 requestGoogleDriveOAuth();
+            });
+        }
+
+        // Copy origin button for resolving origin_mismatch
+        const copyOriginBtn = document.getElementById('copy-origin-btn');
+        const originDisplay = document.getElementById('current-origin-display');
+        if (originDisplay) {
+            originDisplay.innerText = window.location.origin;
+        }
+        if (copyOriginBtn) {
+            copyOriginBtn.addEventListener('click', () => {
+                const textToCopy = window.location.origin;
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => showAdminToast(`تم نسخ الرابط (${textToCopy}) لإضافته في Authorized JavaScript origins`))
+                    .catch(() => showAdminToast(`الرابط: ${textToCopy}`));
             });
         }
 
