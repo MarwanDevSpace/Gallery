@@ -12,7 +12,7 @@
     const auth = (window.firebase && typeof firebase.auth === 'function') ? firebase.auth() : null;
     const SEC_KEY = (window.AJGateway && window.AJGateway.getSecKey()) || 'a4f9b8c2d1e0f7e6d5c4b3a291827364';
 
-    const GOOGLE_DRIVE_FOLDER_ID = '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm';
+    const GOOGLE_DRIVE_FOLDER_ID = '1RMj4e81jVH3kyl3C59Mg2cJ4wzNtlEwY';
     const GOOGLE_DRIVE_FOLDER_URL = `https://drive.google.com/drive/folders/${GOOGLE_DRIVE_FOLDER_ID}?usp=sharing`;
     const FIREBASE_RTDB_BASE = 'https://aj-gallery-2026-default-rtdb.firebaseio.com';
 
@@ -26,6 +26,8 @@
         currentDimensions: null,
         isProcessingImage: false,
         gdriveToken: sessionStorage.getItem('aj_gdrive_token') || localStorage.getItem('aj_gdrive_token') || null,
+        gdriveUserEmail: localStorage.getItem('aj_gdrive_email') || null,
+        gdriveUserDisplayName: localStorage.getItem('aj_gdrive_display_name') || null,
         gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '199047107207-dlqa691pej8o13vequ9irc694vla1slm.apps.googleusercontent.com',
         resolvedFolderId: localStorage.getItem('aj_gdrive_folder_id') || '1RMj4e81jVH3kyl3C59Mg2cJ4wzNtlEwY',
         gisTokenClient: null
@@ -47,26 +49,13 @@
         setTimeout(() => t.classList.remove('show'), 3800);
     }
 
-    // ── Google Drive API v3 Configuration & Authorization (Smart System modeled after Aqeeda) ──
+    // ── Google Drive API v3 Configuration & Direct Authorization ──
     function getGoogleDriveToken() {
         return AdminState.gdriveToken;
     }
 
     function setGoogleDriveToken(token, persist = true) {
-        const clean = String(token || '').trim();
-        if (!clean) {
-            AdminState.gdriveToken = null;
-            sessionStorage.removeItem('aj_gdrive_token');
-            localStorage.removeItem('aj_gdrive_token');
-            updateDriveStatusBadge(false);
-            return;
-        }
-        AdminState.gdriveToken = clean;
-        sessionStorage.setItem('aj_gdrive_token', clean);
-        if (persist) {
-            localStorage.setItem('aj_gdrive_token', clean);
-        }
-        updateDriveStatusBadge(true);
+        saveGDriveCredentials(token, AdminState.resolvedFolderId || GOOGLE_DRIVE_FOLDER_ID, AdminState.gdriveUserEmail, AdminState.gdriveUserDisplayName);
     }
 
     function updateDriveStatusBadge(isConnected) {
@@ -74,54 +63,185 @@
         if (!badge) return;
         const connected = isConnected !== undefined ? isConnected : Boolean(AdminState.gdriveToken);
         if (connected) {
+            const userName = AdminState.gdriveUserDisplayName || 'مـروان';
             badge.style.color = '#10b981';
             badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-            badge.innerHTML = `<i class="fa-brands fa-google-drive" style="color:#10b981"></i> Drive متصل`;
-            badge.title = 'Google Drive متصل ومفوض بنجاح بالمجلد Gallery_Images (API v3)';
+            badge.innerHTML = `<i class="fa-brands fa-google-drive" style="color:#10b981"></i> متصل (${userName})`;
+            badge.title = `Google Drive متصل بنجاح: ${userName} (${AdminState.gdriveUserEmail || 'g997545@gmail.com'}) بالمجلد Gallery_Images`;
         } else {
             badge.style.color = '#f59e0b';
             badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
             badge.innerHTML = `<i class="fa-brands fa-google-drive"></i> ربط Google Drive`;
-            badge.title = 'انقر لربط وتفويض Google Drive للرفع والحذف التلقائي بالمجلد';
+            badge.title = 'انقر لتسجيل الدخول بحساب Google وتفويض مجلد Gallery_Images للرفع المباشر';
         }
     }
 
-    function initGisTokenClient() {
-        if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
-            return null;
+    // ── Save Credentials to Both Browser & Firebase RTDB (/GDriveAuth) ──
+    async function saveGDriveCredentials(token, folderId = GOOGLE_DRIVE_FOLDER_ID, email = null, displayName = null) {
+        const cleanToken = String(token || '').trim();
+        if (!cleanToken) {
+            AdminState.gdriveToken = null;
+            AdminState.gdriveUserEmail = null;
+            AdminState.gdriveUserDisplayName = null;
+            sessionStorage.removeItem('aj_gdrive_token');
+            localStorage.removeItem('aj_gdrive_token');
+            localStorage.removeItem('aj_gdrive_email');
+            localStorage.removeItem('aj_gdrive_display_name');
+            updateDriveStatusBadge(false);
+            try {
+                await fetch(`${FIREBASE_RTDB_BASE}/GDriveAuth/token.json`, { method: 'DELETE' });
+                if (db) db.ref('GDriveAuth/token').remove().catch(() => {});
+            } catch (_) {}
+            return;
         }
-        if (AdminState.gisTokenClient) return AdminState.gisTokenClient;
+
+        AdminState.gdriveToken = cleanToken;
+        AdminState.resolvedFolderId = folderId || GOOGLE_DRIVE_FOLDER_ID;
+        if (email) AdminState.gdriveUserEmail = email;
+        if (displayName) AdminState.gdriveUserDisplayName = displayName;
+
+        localStorage.setItem('aj_gdrive_token', cleanToken);
+        sessionStorage.setItem('aj_gdrive_token', cleanToken);
+        localStorage.setItem('aj_gdrive_folder_id', AdminState.resolvedFolderId);
+        if (email) localStorage.setItem('aj_gdrive_email', email);
+        if (displayName) localStorage.setItem('aj_gdrive_display_name', displayName);
+
+        updateDriveStatusBadge(true);
+
+        const payload = {
+            token: cleanToken,
+            folderId: AdminState.resolvedFolderId,
+            email: AdminState.gdriveUserEmail || 'g997545@gmail.com',
+            displayName: AdminState.gdriveUserDisplayName || 'مـروان',
+            updatedAt: new Date().toISOString()
+        };
 
         try {
-            AdminState.gisTokenClient = window.google.accounts.oauth2.initTokenClient({
-                client_id: AdminState.gdriveClientId,
-                scope: 'https://www.googleapis.com/auth/drive.file',
-                callback: (tokenResponse) => {
-                    if (tokenResponse && tokenResponse.access_token) {
-                        setGoogleDriveToken(tokenResponse.access_token, true);
-                        showAdminToast('تم تسجيل الدخول وتفويض Google Drive بنجاح!');
-                        closeDriveConfigModal();
-                    } else if (tokenResponse && tokenResponse.error) {
-                        showAdminToast('خطأ في مصادقة Google: ' + (tokenResponse.error_description || tokenResponse.error), false);
-                    }
-                }
+            await fetch(`${FIREBASE_RTDB_BASE}/GDriveAuth.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-            return AdminState.gisTokenClient;
+            if (db) {
+                db.ref('GDriveAuth').set(payload).catch(() => {});
+            }
         } catch (e) {
-            console.warn('[GIS Init Warning]', e);
-            return null;
+            console.warn('[GDriveAuth Save RTDB Warning]', e);
         }
     }
 
-    function requestGoogleDriveOAuth() {
-        const client = initGisTokenClient();
-        if (client) {
-            client.requestAccessToken({ prompt: 'consent' });
-        } else {
-            showAdminToast('مكتبة Google قيد التحميل، أو يمكنك إدخال رمز الوصول (Access Token) يدوياً في الأسفل', false);
+    // ── Load Credentials Automatically from Firebase RTDB ──
+    async function loadGDriveCredentialsFromFirebase() {
+        const localToken = localStorage.getItem('aj_gdrive_token') || sessionStorage.getItem('aj_gdrive_token');
+        if (localToken) {
+            AdminState.gdriveToken = localToken;
+            AdminState.resolvedFolderId = localStorage.getItem('aj_gdrive_folder_id') || GOOGLE_DRIVE_FOLDER_ID;
+            AdminState.gdriveUserEmail = localStorage.getItem('aj_gdrive_email') || null;
+            AdminState.gdriveUserDisplayName = localStorage.getItem('aj_gdrive_display_name') || null;
+            updateDriveStatusBadge(true);
+        }
+
+        try {
+            const res = await fetch(`${FIREBASE_RTDB_BASE}/GDriveAuth.json`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.token) {
+                    AdminState.gdriveToken = data.token;
+                    AdminState.resolvedFolderId = data.folderId || GOOGLE_DRIVE_FOLDER_ID;
+                    AdminState.gdriveUserEmail = data.email || null;
+                    AdminState.gdriveUserDisplayName = data.displayName || null;
+
+                    localStorage.setItem('aj_gdrive_token', data.token);
+                    sessionStorage.setItem('aj_gdrive_token', data.token);
+                    localStorage.setItem('aj_gdrive_folder_id', AdminState.resolvedFolderId);
+                    if (data.email) localStorage.setItem('aj_gdrive_email', data.email);
+                    if (data.displayName) localStorage.setItem('aj_gdrive_display_name', data.displayName);
+
+                    updateDriveStatusBadge(true);
+                }
+            }
+        } catch (e) {
+            console.warn('[GDriveAuth RTDB Load Warning]', e);
         }
     }
 
+    // ── Dedicated Firebase Auth Bridge for Google OAuth 2.0 (Eliminates origin_mismatch) ──
+    let _gdriveAuthApp = null;
+    function getGDriveAuthInstance() {
+        if (!window.firebase || typeof window.firebase.auth !== 'function') return null;
+        if (!_gdriveAuthApp) {
+            try {
+                _gdriveAuthApp = firebase.app('gdriveAuthBridge');
+            } catch (_) {
+                try {
+                    _gdriveAuthApp = firebase.initializeApp({
+                        apiKey: 'AIzaSyD-LsftUDTGOi2oXM1gKBGBug-1fhhFzCE',
+                        authDomain: 'aqeeda-plus-core-v1.firebaseapp.com',
+                        projectId: 'aqeeda-plus-core-v1'
+                    }, 'gdriveAuthBridge');
+                } catch (initErr) {
+                    console.warn('[GDriveAuth Bridge Init]', initErr);
+                    return auth;
+                }
+            }
+        }
+        return firebase.auth(_gdriveAuthApp);
+    }
+
+    async function handleGoogleAuthSignIn() {
+        const oauthBtn = document.getElementById('gdrive-oauth-btn');
+        const originalContent = oauthBtn ? oauthBtn.innerHTML : '';
+        if (oauthBtn) {
+            oauthBtn.disabled = true;
+            oauthBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري فتح نافذة تسجيل الدخول...';
+        }
+
+        try {
+            const authInst = getGDriveAuthInstance() || auth;
+            if (!authInst) throw new Error('مكتبة المصادقة غير متوفرة');
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/drive.file');
+            provider.setCustomParameters({
+                prompt: 'select_account consent'
+            });
+
+            showAdminToast('جاري تسجيل الدخول عبر Google وتفويض مجلد Gallery_Images...');
+            const result = await authInst.signInWithPopup(provider);
+
+            const credential = result.credential;
+            const accessToken = credential && credential.accessToken;
+            const user = result.user;
+
+            if (!accessToken) {
+                throw new Error('لم يتم استلام رمز الوصول (Access Token) من Google');
+            }
+
+            const email = (user && user.email) || 'g997545@gmail.com';
+            const displayName = (user && user.displayName) || 'مـروان';
+
+            await saveGDriveCredentials(accessToken, GOOGLE_DRIVE_FOLDER_ID, email, displayName);
+
+            showAdminToast(`تم تسجيل الدخول وتفويض Google Drive بنجاح: ${displayName}`);
+            closeDriveConfigModal();
+        } catch (err) {
+            console.error('[Google OAuth Error]', err);
+            if (err.code === 'auth/popup-blocked') {
+                showAdminToast('تم حظر النافذة المنبثقة، يرجى السماح بالنوافذ المنبثقة للموقع', false);
+            } else if (err.code === 'auth/popup-closed-by-user') {
+                showAdminToast('تم إغلاق نافذة تسجيل الدخول قبل اكتمالها', false);
+            } else {
+                showAdminToast('خطأ في تسجيل الدخول: ' + (err.message || err.code), false);
+            }
+        } finally {
+            if (oauthBtn) {
+                oauthBtn.disabled = false;
+                oauthBtn.innerHTML = originalContent;
+            }
+        }
+    }
+
+    // ── Ensure Google Drive Configuration Modal in DOM ──
     function ensureDriveConfigModalDOM() {
         if (document.getElementById('gdrive-cfg-modal')) return;
 
@@ -137,8 +257,8 @@
                 <div style="display:flex;align-items:center;gap:0.75rem">
                     <i class="fa-brands fa-google-drive" style="color:#10b981;font-size:1.5rem"></i>
                     <div>
-                        <h3 style="margin:0;font-size:1.15rem;font-weight:700">ربط وتفويض Google Drive (API v3)</h3>
-                        <span style="font-size:0.75rem;color:var(--text-secondary)">المجلد المعتمد: Gallery_Images (1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm)</span>
+                        <h3 style="margin:0;font-size:1.15rem;font-weight:700">ربط وتفويض Google Drive</h3>
+                        <span style="font-size:0.75rem;color:var(--text-secondary)">مجلد الحفظ المعتمد: Gallery_Images (${GOOGLE_DRIVE_FOLDER_ID})</span>
                     </div>
                 </div>
                 <button type="button" class="admin-close-btn" id="gdrive-cfg-close" aria-label="إغلاق">
@@ -146,77 +266,66 @@
                 </button>
             </div>
 
+            <!-- Connected Account Card (Shown when connected) -->
+            <div id="gdrive-account-card" style="display:none;margin-bottom:1.1rem;padding:0.85rem 1rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="display:flex;align-items:center;gap:0.65rem">
+                        <div style="width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;color:#10b981;font-weight:700">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <div>
+                            <div id="gdrive-user-name" style="font-weight:700;font-size:0.88rem;color:#10b981">مـروان</div>
+                            <div id="gdrive-user-email" style="font-size:0.73rem;color:var(--text-secondary)">g997545@gmail.com</div>
+                        </div>
+                    </div>
+                    <span style="font-size:0.72rem;background:rgba(16,185,129,0.18);color:#10b981;padding:0.2rem 0.6rem;border-radius:12px;font-weight:600">
+                        <i class="fa-solid fa-circle-check"></i> متصل وجاهز للرفع
+                    </span>
+                </div>
+                <div style="margin-top:0.6rem;font-size:0.73rem;color:var(--text-secondary);border-top:1px dashed rgba(16,185,129,0.2);padding-top:0.5rem">
+                    <i class="fa-solid fa-folder-open" style="color:var(--accent-gold);margin-left:0.3rem"></i> المجلد المرتبط: <strong>Gallery_Images</strong> · يتم حفظ بيانات المصادقة وتحديثها تلقائياً.
+                </div>
+            </div>
+
             <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:1.2rem;line-height:1.6">
-                نظام الرفع الذكي المباشر (مثل تطبيق Aqeeda) يرفع ويحذف الصور داخل مجلد المعرض في Google Drive تلقائياً بدون سكريبتات أو تعقيدات.
+                نظام الرفع الذكي المباشر (المشابه لتطبيق Aqeeda) يرفع ويحذف صور المعرض في Google Drive تلقائياً بدون سكريبتات أو تعقيدات.
             </p>
 
             <!-- Method 1: One-Click Google OAuth Sign-In -->
             <div class="gdrive-step-box" style="background:rgba(66, 133, 244, 0.05);border-color:rgba(66, 133, 244, 0.3)">
                 <div class="gdrive-step-title" style="color:#4285f4">
                     <i class="fa-brands fa-google"></i>
-                    <span>تسجيل الدخول والتفويض المباشر (One-Click Sign-In)</span>
+                    <span>تسجيل الدخول والتفويض المباشر (One-Click OAuth 2.0)</span>
                 </div>
                 <div class="gdrive-step-desc">
-                    اضغط هنا لتسجيل الدخول بحساب Google وتفويض صلاحية إدارة صور المعرض (Drive File Scope) بنقرة واحدة.
+                    اضغط لتسجيل الدخول بحساب Google وتفويض صلاحية رفع وحذف صور المعرض في مجلد <strong>Gallery_Images</strong> بنقرة واحدة بدون أي أخطاء.
                 </div>
                 <div style="margin-top:0.85rem">
-                    <button type="button" id="gdrive-oauth-btn" class="admin-btn-primary" style="background:#4285f4;color:#fff;border:none;width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.9rem;border-radius:6px">
-                        <i class="fa-brands fa-google"></i> تسجيل الدخول بحساب Google وتفويض المعرض
+                    <button type="button" id="gdrive-oauth-btn" class="admin-btn-primary" style="background:#4285f4;color:#fff;border:none;width:100%;justify-content:center;padding:0.7rem 1rem;font-size:0.92rem;border-radius:6px;box-shadow:0 4px 12px rgba(66,133,244,0.25)">
+                        <i class="fa-brands fa-google"></i> <span>تسجيل الدخول بحساب Google وتفويض المعرض</span>
                     </button>
-                </div>
-
-                <!-- Origin Mismatch Solution Box -->
-                <div id="origin-mismatch-helper" style="margin-top:0.85rem;padding:0.75rem;background:rgba(239, 68, 68, 0.08);border:1px solid rgba(239, 68, 68, 0.25);border-radius:6px;font-size:0.78rem;line-height:1.5">
-                    <div style="font-weight:700;color:#f87171;display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem">
-                        <i class="fa-solid fa-triangle-exclamation"></i> إذا ظهر لك خطأ <code>origin_mismatch</code> (خطأ 400):
-                    </div>
-                    <div style="color:var(--text-secondary);font-size:0.75rem">
-                        سياسة أمان Google تطلب إضافة رابط موقعك الحالي إلى قائمة <strong>Authorized JavaScript origins</strong> في Google Cloud Console:
-                    </div>
-                    <div style="margin-top:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
-                        <span style="font-size:0.72rem;color:var(--text-secondary)">الرابط المطلوب إضافته:</span>
-                        <code id="current-origin-display" style="background:#050508;color:var(--accent-gold);padding:0.2rem 0.55rem;border-radius:4px;font-family:monospace;direction:ltr;border:1px solid rgba(210,176,121,0.25)">http://localhost:3000</code>
-                        <button type="button" class="ozeum-mini-pill-btn" id="copy-origin-btn" style="padding:0.2rem 0.55rem;font-size:0.7rem">
-                            <i class="fa-regular fa-copy"></i> نسخ الرابط
-                        </button>
-                        <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="ozeum-mini-pill-btn" style="padding:0.2rem 0.55rem;font-size:0.7rem;color:#4285f4;border-color:rgba(66,133,244,0.4)">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح Google Cloud Console
-                        </a>
-                    </div>
                 </div>
             </div>
 
-            <!-- Method 2: Direct Access Token / Custom Key (Instant Zero-Setup) -->
+            <!-- Method 2: Direct Access Token (Instant Zero-Setup Option) -->
             <div class="gdrive-step-box">
                 <div class="gdrive-step-title">
                     <i class="fa-solid fa-key"></i>
-                    <span>أو استخدام رمز الوصول الفوري (OAuth Access Token — بدون إعدادات)</span>
+                    <span>أو إدخال رمز الوصول الفوري (OAuth Access Token)</span>
                 </div>
                 <div class="gdrive-step-desc">
-                    يمكنك الحصول على رمز وصول فوري خلال 10 ثوانٍ عبر Google OAuth Playground ولصقه هنا ليعمل الرفع والحذف فوراً:
+                    يمكنك أيضاً لصق رمز الوصول من Google Playground أو أي مصدر آخر وسيقوم النظام بحفظه وتفعيله فوراً:
                 </div>
                 <div class="admin-input-group" style="margin-top:0.6rem">
                     <input type="password" id="gdrive-token-input" class="admin-input" placeholder="ya29.a0AfH6SM..." dir="ltr" style="font-family:monospace;font-size:0.8rem">
                 </div>
                 <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:space-between;align-items:center;flex-wrap:wrap">
                     <a href="https://developers.google.com/oauthplayground/#step1&apisSelect=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file" target="_blank" class="ozeum-mini-pill-btn" style="padding:0.35rem 0.8rem;font-size:0.75rem;color:#10b981;border-color:rgba(16,185,129,0.3)">
-                        <i class="fa-solid fa-bolt"></i> توليد الرمز في ثوانٍ (OAuth Playground)
+                        <i class="fa-solid fa-bolt"></i> توليد الرمز (OAuth Playground)
                     </a>
                     <button type="button" class="ozeum-mini-pill-btn" id="gdrive-save-token-btn" style="padding:0.4rem 1rem;font-size:0.78rem;color:var(--accent-gold);border-color:var(--border-gold)">
                         <i class="fa-solid fa-floppy-disk"></i> حفظ وتفعيل الرمز
                     </button>
-                </div>
-            </div>
-
-            <!-- Advanced Settings (Client ID) -->
-            <div class="gdrive-step-box" style="background:transparent;border:1px dashed var(--border-color)">
-                <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" id="gdrive-toggle-adv">
-                    <span style="font-size:0.78rem;color:var(--text-secondary)"><i class="fa-solid fa-gear"></i> إعدادات متقدمة (Google OAuth Client ID)</span>
-                    <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:var(--text-secondary)"></i>
-                </div>
-                <div id="gdrive-adv-panel" style="display:none;margin-top:0.75rem">
-                    <label for="gdrive-client-id-input" style="font-size:0.72rem;color:var(--text-secondary);display:block;margin-bottom:0.3rem">معرف العميل (Client ID)</label>
-                    <input type="text" id="gdrive-client-id-input" class="admin-input" dir="ltr" style="font-family:monospace;font-size:0.75rem">
                 </div>
             </div>
 
@@ -252,33 +361,17 @@
         const oauthBtn = document.getElementById('gdrive-oauth-btn');
         if (oauthBtn) {
             oauthBtn.addEventListener('click', () => {
-                requestGoogleDriveOAuth();
-            });
-        }
-
-        // Copy origin button for resolving origin_mismatch
-        const copyOriginBtn = document.getElementById('copy-origin-btn');
-        const originDisplay = document.getElementById('current-origin-display');
-        if (originDisplay) {
-            originDisplay.innerText = window.location.origin;
-        }
-        if (copyOriginBtn) {
-            copyOriginBtn.addEventListener('click', () => {
-                const textToCopy = window.location.origin;
-                navigator.clipboard.writeText(textToCopy)
-                    .then(() => showAdminToast(`تم نسخ الرابط (${textToCopy}) لإضافته في Authorized JavaScript origins`))
-                    .catch(() => showAdminToast(`الرابط: ${textToCopy}`));
+                handleGoogleAuthSignIn();
             });
         }
 
         // Method 2: Save Token button
         const saveTokenBtn = document.getElementById('gdrive-save-token-btn');
         if (saveTokenBtn) {
-            saveTokenBtn.addEventListener('click', () => {
+            saveTokenBtn.addEventListener('click', async () => {
                 const input = document.getElementById('gdrive-token-input');
                 if (!input) return;
                 let tokenVal = input.value.trim();
-                // Extract ya29 token if user pasted JSON or playground output
                 const jsonMatch = tokenVal.match(/"access_token"\s*:\s*"([^"]+)"/);
                 const rawMatch = tokenVal.match(/ya29\.[a-zA-Z0-9_-]+/);
                 if (jsonMatch && jsonMatch[1]) {
@@ -291,7 +384,7 @@
                     showAdminToast('يرجى إدخال رمز وصول صالح يبدأ بـ ya29...', false);
                     return;
                 }
-                setGoogleDriveToken(tokenVal, true);
+                await saveGDriveCredentials(tokenVal, GOOGLE_DRIVE_FOLDER_ID, AdminState.gdriveUserEmail, AdminState.gdriveUserDisplayName);
                 showAdminToast('تم تفعيل وحفظ تفويض Google Drive بنجاح!');
                 closeDriveConfigModal();
             });
@@ -300,36 +393,11 @@
         // Unlink button
         const unlinkBtn = document.getElementById('gdrive-unlink-btn');
         if (unlinkBtn) {
-            unlinkBtn.addEventListener('click', () => {
+            unlinkBtn.addEventListener('click', async () => {
                 if (confirm('هل أنت متأكد من إلغاء تفويض Google Drive؟')) {
-                    setGoogleDriveToken(null);
+                    await saveGDriveCredentials(null);
                     showAdminToast('تم إلغاء تفويض Google Drive');
                     closeDriveConfigModal();
-                }
-            });
-        }
-
-        // Advanced toggle
-        const toggleAdv = document.getElementById('gdrive-toggle-adv');
-        const advPanel = document.getElementById('gdrive-adv-panel');
-        if (toggleAdv && advPanel) {
-            toggleAdv.addEventListener('click', () => {
-                const isHidden = advPanel.style.display === 'none';
-                advPanel.style.display = isHidden ? 'block' : 'none';
-            });
-        }
-
-        // Client ID input change
-        const clientIdInput = document.getElementById('gdrive-client-id-input');
-        if (clientIdInput) {
-            clientIdInput.value = AdminState.gdriveClientId;
-            clientIdInput.addEventListener('change', () => {
-                const v = clientIdInput.value.trim();
-                if (v) {
-                    AdminState.gdriveClientId = v;
-                    AdminState.gisTokenClient = null;
-                    localStorage.setItem('aj_gdrive_client_id', v);
-                    showAdminToast('تم حفظ معرف العميل الجديد');
                 }
             });
         }
@@ -341,16 +409,23 @@
         const input = document.getElementById('gdrive-token-input');
         const unlinkBtn = document.getElementById('gdrive-unlink-btn');
         const statusText = document.getElementById('gdrive-modal-status-text');
+        const accountCard = document.getElementById('gdrive-account-card');
+        const userNameEl = document.getElementById('gdrive-user-name');
+        const userEmailEl = document.getElementById('gdrive-user-email');
         if (!modal) return;
 
         if (AdminState.gdriveToken) {
             if (input) input.value = AdminState.gdriveToken;
             if (unlinkBtn) unlinkBtn.style.display = 'inline-flex';
-            if (statusText) statusText.innerHTML = '<span style="color:#10b981"><i class="fa-solid fa-circle-check"></i> التفويض نشط ومتصل</span>';
+            if (statusText) statusText.innerHTML = '<span style="color:#10b981"><i class="fa-solid fa-circle-check"></i> التفويض نشط ومتصل بالمجلد</span>';
+            if (accountCard) accountCard.style.display = 'block';
+            if (userNameEl) userNameEl.innerText = AdminState.gdriveUserDisplayName || 'مـروان';
+            if (userEmailEl) userEmailEl.innerText = AdminState.gdriveUserEmail || 'g997545@gmail.com';
         } else {
             if (input) input.value = '';
             if (unlinkBtn) unlinkBtn.style.display = 'none';
             if (statusText) statusText.innerHTML = '<span style="color:#f59e0b"><i class="fa-solid fa-circle-exclamation"></i> غير متصل حالياً</span>';
+            if (accountCard) accountCard.style.display = 'none';
         }
 
         modal.classList.add('active');
@@ -369,59 +444,9 @@
             AdminState.resolvedFolderId = stored;
             return stored;
         }
-
-        // 1. Try checking default folder ID
-        try {
-            const checkRes = await fetch(`https://www.googleapis.com/drive/v3/files/${GOOGLE_DRIVE_FOLDER_ID}?fields=id`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (checkRes.ok) {
-                AdminState.resolvedFolderId = GOOGLE_DRIVE_FOLDER_ID;
-                localStorage.setItem('aj_gdrive_folder_id', GOOGLE_DRIVE_FOLDER_ID);
-                return GOOGLE_DRIVE_FOLDER_ID;
-            }
-        } catch (_) {}
-
-        // 2. Search for existing Gallery_Images folder within token scope
-        try {
-            const searchRes = await fetch("https://www.googleapis.com/drive/v3/files?q=name = 'Gallery_Images' and mimeType = 'application/vnd.google-apps.folder' and trashed = false&fields=files(id,name)", {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (searchRes.ok) {
-                const searchData = await searchRes.json();
-                if (searchData.files && searchData.files.length > 0) {
-                    const foundId = searchData.files[0].id;
-                    AdminState.resolvedFolderId = foundId;
-                    localStorage.setItem('aj_gdrive_folder_id', foundId);
-                    return foundId;
-                }
-            }
-        } catch (_) {}
-
-        // 3. Automatically create Gallery_Images folder if needed
-        try {
-            const createRes = await fetch("https://www.googleapis.com/drive/v3/files", {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: 'Gallery_Images',
-                    mimeType: 'application/vnd.google-apps.folder'
-                })
-            });
-            if (createRes.ok) {
-                const createdData = await createRes.json();
-                if (createdData.id) {
-                    AdminState.resolvedFolderId = createdData.id;
-                    localStorage.setItem('aj_gdrive_folder_id', createdData.id);
-                    return createdData.id;
-                }
-            }
-        } catch (_) {}
-
-        return null;
+        AdminState.resolvedFolderId = GOOGLE_DRIVE_FOLDER_ID;
+        localStorage.setItem('aj_gdrive_folder_id', GOOGLE_DRIVE_FOLDER_ID);
+        return GOOGLE_DRIVE_FOLDER_ID;
     }
 
     // ── Direct Google Drive File Upload & Public Permissions (API v3) ──
@@ -1713,6 +1738,29 @@
         });
     }
 
+    // ── GDriveAuth Realtime Sync (/GDriveAuth) ──
+    loadGDriveCredentialsFromFirebase();
+
+    if (db) {
+        db.ref('GDriveAuth').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.token) {
+                AdminState.gdriveToken = data.token;
+                AdminState.resolvedFolderId = data.folderId || GOOGLE_DRIVE_FOLDER_ID;
+                AdminState.gdriveUserEmail = data.email || null;
+                AdminState.gdriveUserDisplayName = data.displayName || null;
+                localStorage.setItem('aj_gdrive_token', data.token);
+                sessionStorage.setItem('aj_gdrive_token', data.token);
+                localStorage.setItem('aj_gdrive_folder_id', AdminState.resolvedFolderId);
+                if (data.email) localStorage.setItem('aj_gdrive_email', data.email);
+                if (data.displayName) localStorage.setItem('aj_gdrive_display_name', data.displayName);
+                updateDriveStatusBadge(true);
+            }
+        }, (err) => {
+            console.warn('[GDriveAuth Sync Warning]', err.message);
+        });
+    }
+
     // Public API
     window.AJAdmin = {
         open: openAdminModal,
@@ -1723,6 +1771,8 @@
         toggleHeroFeatured: toggleHeroFeatured,
         resetForm: resetArtworkForm,
         changePin: changePin,
+        saveGDriveCredentials: saveGDriveCredentials,
+        loadGDriveCredentials: loadGDriveCredentialsFromFirebase,
         setCategory: (cat) => {
             const input = document.getElementById('input-work-category');
             if (input) {

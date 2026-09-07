@@ -7,7 +7,7 @@
     'use strict';
 
     // ── Media Storage Reference ──
-    const GOOGLE_DRIVE_FOLDER_ID = '1SIg96z1Ej0LgyC1WsOjT97x7gE_6W-hm';
+    const GOOGLE_DRIVE_FOLDER_ID = '1RMj4e81jVH3kyl3C59Mg2cJ4wzNtlEwY';
     const GOOGLE_DRIVE_FOLDER_NAME = 'Gallery_Images';
     const GOOGLE_DRIVE_FOLDER_URL = `https://drive.google.com/drive/folders/${GOOGLE_DRIVE_FOLDER_ID}`;
 
