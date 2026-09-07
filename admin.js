@@ -28,7 +28,7 @@
         gdriveToken: sessionStorage.getItem('aj_gdrive_token') || localStorage.getItem('aj_gdrive_token') || null,
         gdriveUserEmail: localStorage.getItem('aj_gdrive_email') || null,
         gdriveUserDisplayName: localStorage.getItem('aj_gdrive_display_name') || null,
-        gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '199047107207-dlqa691pej8o13vequ9irc694vla1slm.apps.googleusercontent.com',
+        gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '',
         resolvedFolderId: localStorage.getItem('aj_gdrive_folder_id') || '1RMj4e81jVH3kyl3C59Mg2cJ4wzNtlEwY',
         gisTokenClient: null
     };
@@ -175,9 +175,9 @@
             } catch (_) {
                 try {
                     _gdriveAuthApp = firebase.initializeApp({
-                        apiKey: 'AIzaSyD-LsftUDTGOi2oXM1gKBGBug-1fhhFzCE',
-                        authDomain: 'aqeeda-plus-core-v1.firebaseapp.com',
-                        projectId: 'aqeeda-plus-core-v1'
+                        apiKey: 'AIzaSyBk79QWygxBXZamKM2TNFXFyvVVtbITI2E',
+                        authDomain: 'aj-gallery-2026.firebaseapp.com',
+                        projectId: 'aj-gallery-2026'
                     }, 'gdriveAuthBridge');
                 } catch (initErr) {
                     console.warn('[GDriveAuth Bridge Init]', initErr);
