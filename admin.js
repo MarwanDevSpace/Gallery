@@ -169,23 +169,21 @@
     let _gdriveAuthApp = null;
     function getGDriveAuthInstance() {
         if (!window.firebase || typeof window.firebase.auth !== 'function') return null;
-        if (!_gdriveAuthApp) {
-            try {
-                _gdriveAuthApp = firebase.app('gdriveAuthBridge');
-            } catch (_) {
-                try {
-                    _gdriveAuthApp = firebase.initializeApp({
-                        apiKey: 'AIzaSyBk79QWygxBXZamKM2TNFXFyvVVtbITI2E',
-                        authDomain: 'aj-gallery-2026.firebaseapp.com',
-                        projectId: 'aj-gallery-2026'
-                    }, 'gdriveAuthBridge');
-                } catch (initErr) {
-                    console.warn('[GDriveAuth Bridge Init]', initErr);
-                    return auth;
-                }
+        try {
+            if (window.firebase.apps && window.firebase.apps.length > 0) {
+                return firebase.auth();
             }
+            const app = firebase.initializeApp({
+                apiKey: 'AIzaSyBk79QWygxBXZamKM2TNFXFyvVVtbITI2E',
+                authDomain: 'aj-gallery-2026.firebaseapp.com',
+                projectId: 'aj-gallery-2026',
+                databaseURL: 'https://aj-gallery-2026-default-rtdb.firebaseio.com'
+            });
+            return firebase.auth(app);
+        } catch (e) {
+            console.warn('[Auth Bridge Init Warning]', e);
+            return auth;
         }
-        return firebase.auth(_gdriveAuthApp);
     }
 
     async function handleGoogleAuthSignIn() {
