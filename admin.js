@@ -28,7 +28,7 @@
         gdriveToken: sessionStorage.getItem('aj_gdrive_token') || localStorage.getItem('aj_gdrive_token') || null,
         gdriveUserEmail: localStorage.getItem('aj_gdrive_email') || null,
         gdriveUserDisplayName: localStorage.getItem('aj_gdrive_display_name') || null,
-        gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '',
+        gdriveClientId: localStorage.getItem('aj_gdrive_client_id') || '189440461962-oup4tgj5vqhkl45b2f4cq9b8lkaag765.apps.googleusercontent.com',
         resolvedFolderId: localStorage.getItem('aj_gdrive_folder_id') || '1RMj4e81jVH3kyl3C59Mg2cJ4wzNtlEwY',
         gisTokenClient: null
     };
@@ -186,48 +186,132 @@
         }
     }
 
+    // ── Ensure Google Identity Services (GIS) Library is Ready ──
+    function ensureGsiLoaded() {
+        return new Promise((resolve) => {
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                return resolve(true);
+            }
+            const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve(true));
+                setTimeout(() => resolve(Boolean(window.google && window.google.accounts && window.google.accounts.oauth2)), 1500);
+                return;
+            }
+            const s = document.createElement('script');
+            s.src = 'https://accounts.google.com/gsi/client';
+            s.async = true;
+            s.defer = true;
+            s.onload = () => resolve(true);
+            s.onerror = () => resolve(false);
+            document.head.appendChild(s);
+            setTimeout(() => resolve(Boolean(window.google && window.google.accounts && window.google.accounts.oauth2)), 2000);
+        });
+    }
+
+    // ── Direct Native Google OAuth 2.0 Sign-In & Authorization ──
     async function handleGoogleAuthSignIn() {
         const oauthBtn = document.getElementById('gdrive-oauth-btn');
         const originalContent = oauthBtn ? oauthBtn.innerHTML : '';
         if (oauthBtn) {
             oauthBtn.disabled = true;
-            oauthBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري فتح نافذة تسجيل الدخول...';
+            oauthBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري فتح نافذة Google...';
         }
 
+        const clientId = AdminState.gdriveClientId || '189440461962-oup4tgj5vqhkl45b2f4cq9b8lkaag765.apps.googleusercontent.com';
+
+        // 1. PRIMARY: Google Identity Services (GIS) — Native, Direct, Never Quits Prematurely
+        try {
+            await ensureGsiLoaded();
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                showAdminToast('جاري فتح نافذة تفويض Google الرسمية (Drive API v3)...');
+
+                const client = window.google.accounts.oauth2.initTokenClient({
+                    client_id: clientId,
+                    scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+                    callback: async (tokenResponse) => {
+                        if (oauthBtn) {
+                            oauthBtn.disabled = false;
+                            oauthBtn.innerHTML = originalContent;
+                        }
+
+                        if (tokenResponse && tokenResponse.access_token) {
+                            const token = tokenResponse.access_token;
+                            showAdminToast('تم استلام التفويض بنجاح! جاري ربط المجلد وحفظ الاعتماد...');
+
+                            let email = 'g997545@gmail.com';
+                            let displayName = 'مـروان';
+
+                            // Fetch user info directly from Google OAuth API
+                            try {
+                                const uRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (uRes.ok) {
+                                    const uData = await uRes.json();
+                                    if (uData.email) email = uData.email;
+                                    if (uData.name) displayName = uData.name;
+                                }
+                            } catch (_) {}
+
+                            // Verify target Drive folder Gallery_Images
+                            try {
+                                await resolveTargetDriveFolder(token);
+                            } catch (_) {}
+
+                            await saveGDriveCredentials(token, GOOGLE_DRIVE_FOLDER_ID, email, displayName);
+                            showAdminToast(`تم ربط وتفويض Google Drive بنجاح: ${displayName}`);
+                            closeDriveConfigModal();
+                        } else if (tokenResponse && tokenResponse.error) {
+                            console.error('[Google GIS Error]', tokenResponse);
+                            showAdminToast(`خطأ من Google: ${tokenResponse.error_description || tokenResponse.error}`, false);
+                        }
+                    },
+                    error_callback: (err) => {
+                        console.error('[GIS Error Callback]', err);
+                        if (oauthBtn) {
+                            oauthBtn.disabled = false;
+                            oauthBtn.innerHTML = originalContent;
+                        }
+                        showAdminToast('خطأ أثناء فتح نافذة Google: ' + (err.message || err.type || 'حدث خطأ'), false);
+                    }
+                });
+
+                client.requestAccessToken({ prompt: 'consent' });
+                return;
+            }
+        } catch (gisInitErr) {
+            console.warn('[GIS Direct Init Warning, trying fallback]', gisInitErr);
+        }
+
+        // 2. SECONDARY FALLBACK: Firebase Auth signInWithPopup
         try {
             const authInst = getGDriveAuthInstance() || auth;
             if (!authInst) throw new Error('مكتبة المصادقة غير متوفرة');
 
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.addScope('https://www.googleapis.com/auth/drive.file');
-            provider.setCustomParameters({
-                prompt: 'select_account consent'
-            });
+            provider.setCustomParameters({ prompt: 'select_account consent' });
 
-            showAdminToast('جاري تسجيل الدخول عبر Google وتفويض مجلد Gallery_Images...');
             const result = await authInst.signInWithPopup(provider);
-
             const credential = result.credential;
             const accessToken = credential && credential.accessToken;
             const user = result.user;
 
-            if (!accessToken) {
-                throw new Error('لم يتم استلام رمز الوصول (Access Token) من Google');
-            }
+            if (!accessToken) throw new Error('لم يتم استلام رمز الوصول من Google');
 
             const email = (user && user.email) || 'g997545@gmail.com';
             const displayName = (user && user.displayName) || 'مـروان';
 
             await saveGDriveCredentials(accessToken, GOOGLE_DRIVE_FOLDER_ID, email, displayName);
-
             showAdminToast(`تم تسجيل الدخول وتفويض Google Drive بنجاح: ${displayName}`);
             closeDriveConfigModal();
         } catch (err) {
-            console.error('[Google OAuth Error]', err);
+            console.error('[Auth Error]', err);
             if (err.code === 'auth/popup-blocked') {
-                showAdminToast('تم حظر النافذة المنبثقة، يرجى السماح بالنوافذ المنبثقة للموقع', false);
+                showAdminToast('تم حظر النافذة المنبثقة، يرجى السماح بالنوافذ المنبثقة في المتصفح للمتابعة', false);
             } else if (err.code === 'auth/popup-closed-by-user') {
-                showAdminToast('تم إغلاق نافذة تسجيل الدخول قبل اكتمالها', false);
+                showAdminToast('أغلقت نافذة التسجيل؛ يمكنك استخدام رمز الوصول الفوري (OAuth Playground) في الأسفل', false);
             } else {
                 showAdminToast('خطأ في تسجيل الدخول: ' + (err.message || err.code), false);
             }
@@ -286,7 +370,7 @@
             </div>
 
             <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:1.2rem;line-height:1.6">
-                نظام الرفع الذكي المباشر (المشابه لتطبيق Aqeeda) يرفع ويحذف صور المعرض في Google Drive تلقائياً بدون سكريبتات أو تعقيدات.
+                نظام الرفع الذكي المباشر يرفع ويحذف صور المعرض في Google Drive تلقائياً بدون سكريبتات أو تعقيدات.
             </p>
 
             <!-- Method 1: One-Click Google OAuth Sign-In -->
@@ -296,7 +380,7 @@
                     <span>تسجيل الدخول والتفويض المباشر (One-Click OAuth 2.0)</span>
                 </div>
                 <div class="gdrive-step-desc">
-                    اضغط لتسجيل الدخول بحساب Google وتفويض صلاحية رفع وحذف صور المعرض في مجلد <strong>Gallery_Images</strong> بنقرة واحدة بدون أي أخطاء.
+                    اضغط لتسجيل الدخول بحساب Google وتفويض صلاحية رفع وحذف صور المعرض في مجلد <strong>Gallery_Images</strong> بنقرة واحدة مباشرة.
                 </div>
                 <div style="margin-top:0.85rem">
                     <button type="button" id="gdrive-oauth-btn" class="admin-btn-primary" style="background:#4285f4;color:#fff;border:none;width:100%;justify-content:center;padding:0.7rem 1rem;font-size:0.92rem;border-radius:6px;box-shadow:0 4px 12px rgba(66,133,244,0.25)">
@@ -324,6 +408,19 @@
                     <button type="button" class="ozeum-mini-pill-btn" id="gdrive-save-token-btn" style="padding:0.4rem 1rem;font-size:0.78rem;color:var(--accent-gold);border-color:var(--border-gold)">
                         <i class="fa-solid fa-floppy-disk"></i> حفظ وتفعيل الرمز
                     </button>
+                </div>
+            </div>
+
+            <!-- Advanced Settings (Client ID) -->
+            <div class="gdrive-step-box" style="background:transparent;border:1px dashed var(--border-color)">
+                <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" id="gdrive-toggle-adv">
+                    <span style="font-size:0.78rem;color:var(--text-secondary)"><i class="fa-solid fa-gear"></i> إعدادات متقدمة (Google OAuth Client ID)</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:var(--text-secondary)"></i>
+                </div>
+                <div id="gdrive-adv-panel" style="display:none;margin-top:0.75rem">
+                    <label for="gdrive-client-id-input" style="font-size:0.72rem;color:var(--text-secondary);display:block;margin-bottom:0.3rem">معرف العميل (Client ID لمشروع aj-gallery-2026)</label>
+                    <input type="text" id="gdrive-client-id-input" class="admin-input" dir="ltr" style="font-family:monospace;font-size:0.75rem">
+                    <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem">المعرف المعتمد لمشروع aj-gallery-2026: <code>189440461962-oup4tgj5vqhkl45b2f4cq9b8lkaag765.apps.googleusercontent.com</code></div>
                 </div>
             </div>
 
@@ -396,6 +493,30 @@
                     await saveGDriveCredentials(null);
                     showAdminToast('تم إلغاء تفويض Google Drive');
                     closeDriveConfigModal();
+                }
+            });
+        }
+
+        // Advanced toggle
+        const toggleAdv = document.getElementById('gdrive-toggle-adv');
+        const advPanel = document.getElementById('gdrive-adv-panel');
+        if (toggleAdv && advPanel) {
+            toggleAdv.addEventListener('click', () => {
+                const isHidden = advPanel.style.display === 'none';
+                advPanel.style.display = isHidden ? 'block' : 'none';
+            });
+        }
+
+        // Client ID input change
+        const clientIdInput = document.getElementById('gdrive-client-id-input');
+        if (clientIdInput) {
+            clientIdInput.value = AdminState.gdriveClientId || '189440461962-oup4tgj5vqhkl45b2f4cq9b8lkaag765.apps.googleusercontent.com';
+            clientIdInput.addEventListener('change', () => {
+                const v = clientIdInput.value.trim();
+                if (v) {
+                    AdminState.gdriveClientId = v;
+                    localStorage.setItem('aj_gdrive_client_id', v);
+                    showAdminToast('تم حفظ معرف العميل الجديد');
                 }
             });
         }
